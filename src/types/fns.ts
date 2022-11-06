@@ -3,9 +3,18 @@ import { types } from '@/types/types';
 export namespace fns {
 
   /**
+   * 通用函数类型
+   */
+  export interface Function {
+    (...args: any[]): any | undefined;
+  }
+
+  /**
    * 数据处理器
    */
-  export type Handler<T, R> = (data: T) => R;
+  export interface Handler<T, R> {
+    (data: T): R
+  }
 
   /**
    * 数据消费处理器

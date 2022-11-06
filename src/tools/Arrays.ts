@@ -2,7 +2,6 @@ import { types } from '@/types/types';
 import Cast from '@/tools/Cast';
 import Validation from '@/tools/Validation';
 import { fns } from '@/types/fns';
-import Commons from '@/tools/Commons';
 import Jsons from '@/tools/Jsons';
 import Functions from '@/tools/Functions';
 import Builders from '@/tools/Builders';
@@ -108,7 +107,7 @@ export default class Arrays {
     return Logics
       .case(a.length >= b.length, { src: a, other: b })
       .otherwise({ src: b, other: a })
-      .get(({ src, other }) => {
+      .getValue(({ src, other }) => {
         const result: T[] = [];
 
         this.foreach(src, itemA => {
@@ -192,9 +191,9 @@ export default class Arrays {
     el: T,
     predictor?: fns.ArrayPredictor<T>
   ): number {
-    const foundIndex = Arrays.index(arr, el, predictor);
-    if (-1 !== foundIndex)
-      return foundIndex;
+    const item = Arrays.index(arr, el, predictor);
+    if (-1 !== item.index)
+      return item.index;
     return arr.push(el) - 1;
   }
 
@@ -209,7 +208,7 @@ export default class Arrays {
     arr: Array<T>,
     el: T,
     predictor?: fns.ArrayPredictor<T>
-  ): types.IteratorItem<T> {
+  ): types.ArrayIteratorItem<T> {
     let index = -1;
     const itemHandler = Builders.equalsOtherElement(el, predictor);
     Arrays.foreach<T>(arr, (item) => {
@@ -218,7 +217,8 @@ export default class Arrays {
         return false;
       }
     });
-    return { index: index, item: Logics.case(-1 !== index, () => arr[index]).get() };
+    const item = Logics.case(-1 !== index, arr[index]).getValue();
+    return { index: index, item };
   }
 
   /**
@@ -232,41 +232,8 @@ export default class Arrays {
     arr: Array<T>,
     el: T,
     predictor?: fns.ArrayPredictor<T>
-  ): T | null {
-    const i = Arrays.index(arr, el, predictor);
-    return -1 !== i ? arr[i] : null;
-  }
-
-  /**
-   * 删除
-   * @param arr 数组
-   * @param {T} el 查找条件
-   * @param predictor 唯一值属性名或比较器函数(返回true表示找到)
-   * @return {T | null} 删除成功返回被删除目标值, 否则返回null
-   */
-  static remove<T>(
-    arr: Array<T>,
-    el: any,
-    predictor?: fns.ArrayPredictor<T>
-  ): T | null {
-    const i = Arrays.index(arr, el, predictor);
-    if (-1 === i) {
-      return null;
-    }
-    return arr.splice(i, 1)[0];
-  }
-
-  /**
-   * 数组减法运算(arrA - arrB), 对象匹配通过引用判定
-   * @param arrA 被修改数据
-   * @param arrB 目标数组
-   * @return 结果(新)数组
-   */
-  static removeAll<T>(
-    arrA: Array<T>,
-    arrB: Array<T>
-  ): Array<T> {
-    return arrA.filter(av => !arrB.includes(av));
+  ): types.ArrayIteratorItem<T> {
+    return Arrays.index(arr, el, predictor);
   }
 
   /**
@@ -286,6 +253,35 @@ export default class Arrays {
   }
 
   /**
+   * 删除
+   * @param arr 数组
+   * @param condition 查找条件
+   * @param predictor 唯一值属性名或比较器函数(返回true表示找到)
+   * @return 删除成功返回被删除目标值, 否则返回null
+   */
+  static remove<T>(
+    arr: Array<T>,
+    condition: any,
+    predictor?: fns.ArrayPredictor<T>
+  ): types.Nillable<T> {
+    const el = Arrays.index(arr, condition, predictor);
+    return Logics.case(this.validateIndex(el), () => arr.splice(el.index, 1)[0]).getValue();
+  }
+
+  /**
+   * 数组减法运算(arrA - arrB), 对象匹配通过引用判定
+   * @param arrA 被修改数据
+   * @param arrB 目标数组
+   * @return 结果(新)数组
+   */
+  static removeAll<T>(
+    arrA: Array<T>,
+    arrB: Array<T>
+  ): Array<T> {
+    return arrA.filter(av => !arrB.includes(av));
+  }
+
+  /**
    * 是否包含指定值
    * @param arr 数组
    * @param el 数组元素
@@ -297,7 +293,7 @@ export default class Arrays {
     el: T,
     predictor?: fns.ArrayPredictor<T>
   ): boolean {
-    return -1 !== Arrays.index(arr, el, predictor);
+    return this.validateIndex(Arrays.index(arr, el, predictor));
   }
 
   /**
@@ -317,7 +313,9 @@ export default class Arrays {
     });
 
     delKeys = delKeys.reverse();
-    Arrays.foreach(delKeys, (item) => arr.splice(item.item, 1));
+    Arrays.foreach(delKeys, (item) => {
+      arr.splice(item.index, 1);
+    });
   }
 
   /**
@@ -331,9 +329,9 @@ export default class Arrays {
   ): types.RecordS<T[]> {
     const ret: types.RecordS<T[]> = Cast.as();
     const itemHandler = Builders.toArrayKeyMapperHandler(mapper);
-    Arrays.foreach(arr, (item) => {
-      const rk = itemHandler(item);
-      Jsons.computeIfAbsent(ret, rk, () => []);
+    Arrays.foreach(arr, (el) => {
+      const rk = itemHandler(el);
+      Jsons.computeIfAbsent<types.RecordS<T[]>>(ret, rk, []).push(el.item);
     });
     return ret;
   }
@@ -344,211 +342,170 @@ export default class Arrays {
    * @param propChain 元素中的属性名
    * @return 属性值数组
    */
-  static mapProp<T extends Record<K, P>, K extends keyof T, P extends T[K]>(
+  static extractProps<T extends Record<K, P>, K extends string & keyof T, P extends T[K]>(
     arr: Array<T>,
     propChain: K
   ): Array<P> {
     const vals: P[] = [];
     Arrays.foreach(arr, (item) => {
-      const val: P = Jsons.get(item.item, propChain.toString());
+      const val: P = Jsons.get(item.item, propChain);
       if (Validation.notEmpty(val))
         vals.push(val);
     });
     return vals;
   }
 
-  ///**
-  // * 去重复
-  // * @param arr {Array<T>>} 数组
-  // * @param [cover=true] 是否对arr产生副作用
-  // * @return arr数组
-  // */
-  //static unique<T>(
-  //  arr: Array<T>,
-  //  cover = true
-  //): Array<T> {
-  //  const tmp = logics.or(arr, [])
-  //  if (undefined === tmp) {
-  //    return []
-  //  }
-  //
-  //  const uniqueArr: T[] = []
-  //  arr.forEach(e => !uniqueArr.includes(e) && uniqueArr.push(e))
-  //
-  //  if (cover) {
-  //    arr.length = 0
-  //    Arrays.concat(arr, uniqueArr)
-  //  }
-  //
-  //  return arr
-  //}
-  //
-  ///**
-  // * 按指定属性值去重复
-  // * @param arr 目标数组
-  // * @param func {StringOrIdableConvertor<T>} 属性名或ID提取器函数
-  // * @return 处理后无序数组
-  // */
-  //static uniqueBy<T>(
-  //  arr: Array<T>,
-  //  func: StringOrIdableConvertor<T>
-  //): Array<T> {
-  //  return Object.values(Arrays.toMap(arr, func))
-  //}
-  //
-  ///**
-  // * 数组合并
-  // * @param dist 目标数组
-  // * @param otherArr {Array<Array<T>>} 源数组
-  // * @return 目标数组
-  // */
-  //static merge<T>(
-  //  dist: Array<T>,
-  //  ...otherArr: Array<Array<T>>
-  //): Array<T> {
-  //  if (!validators.isEmpty(otherArr)) {
-  //    Arrays.foreach(otherArr, arr => Arrays.concat<T>(dist, arr))
-  //  }
-  //  return dist
-  //}
-  //
-  ///**
-  // * 元素查找
-  // * @param arr 数组
-  // * @param proc 匹配器
-  // */
-  //static fetch<T>(
-  //  arr: Array<T>,
-  //  proc: funcs.IDataProcessor<T, boolean>
-  //): { element: T, index: number } {
-  //  const data = {
-  //    element: arr[arr.length - 1],
-  //    index: arr.length - 1
-  //  }
-  //  Arrays.foreach(arr, (
-  //    e,
-  //    i
-  //  ) => {
-  //    if (proc(e)) {
-  //      data.element = e
-  //      data.index = i
-  //      return false
-  //    }
-  //  })
-  //  return data
-  //}
-  //
-  ///**
-  // * 把对象按值对键进行分组
-  // * @param obj 对象
-  // * @param mapper 值映射器, 返回的数据key
-  // */
-  //static groupByValue<T>(
-  //  obj: Part<T>,
-  //  mapper?: funcs.IDataProcessor<T, string>
-  //): JsonT<string[]> {
-  //  const ret: JsonT<string[]> = converters.cast()
-  //
-  //  const $mapper = mapper || strings.from
-  //  jsons.foreach(obj, (
-  //    v,
-  //    k
-  //  ) => {
-  //    const sv = $mapper(v)
-  //    const group = ret[sv] || []
-  //    group.push(`${k}`)
-  //    ret[sv] = group
-  //  })
-  //
-  //  return ret
-  //}
-  //
-  ///**
-  // * 生成一组连续值数组. 如果 <i> start >= end</i> 总是返回0长度数组.
-  // * @param start 开始值(包含)
-  // * @param end 结束值(包含)
-  // * @return 数组长度: end - start + 1
-  // */
-  //static genNums(
-  //  start: number,
-  //  end: number
-  //): number[] {
-  //  if (0 >= end - start) {
-  //    return []
-  //  }
-  //
-  //  const keyIter = new Array(end + 1).keys()
-  //  return [...keyIter].slice(start)
-  //}
-  //
-  ///**
-  // * 树形映射
-  // * @param arr 目标数组(会被直接改变)
-  // * @param [childKey = 'children'] 子节点在父节点的属性名, 覆盖现有属性名会报错.
-  // * @param [parentIndex = 'parent'] 子节点指向父节点属性名.
-  // * @param [parentKey = 'id'] 被子节点指向的父节点属性名.
-  // * @param [onlyRoot=false] 是否从根节点移除所有子节点.
-  // */
-  //static tree<T>(
-  //  arr: T[],
-  //  childKey = 'children',
-  //  parentIndex = 'parentId',
-  //  parentKey = 'id',
-  //  onlyRoot = false
-  //): T[] {
-  //
-  //  // 按parentKey映射所有节点
-  //  const keyMapper: JsonT<T> = Arrays.toMap(arr, parentKey)
-  //
-  //  // 所有子节点映射值
-  //  const childrenIds: string[] = []
-  //
-  //  Arrays.foreach(arr, (e: any) => {
-  //    const pid = e[parentIndex]
-  //    const parent: any = keyMapper[pid]
-  //    if (!parent) return
-  //
-  //    childrenIds.push(e[parentKey])
-  //    const children = parent[childKey] || []
-  //    children.push(e)
-  //    parent[childKey] = Arrays.unique(children)
-  //  })
-  //
-  //  // 移除子节点
-  //  if (onlyRoot) {
-  //    Arrays.foreach(childrenIds, idKey => {
-  //      delete keyMapper[idKey]
-  //    })
-  //  }
-  //
-  //  return Object.values(keyMapper)
-  //}
-  //
-  ///**
-  // * 树结构转列表
-  // * @param root 根节点
-  // * @param childKey 子节点列表属性
-  // * @param [hasRoot=true] 是否包含根节点
-  // * @param [delChildren=false] 是否删除子节点
-  // */
-  //static flatTree<T>(
-  //  root: T,
-  //  childKey = 'children' as keyof T,
-  //  hasRoot = true,
-  //  delChildren = false
-  //): T[] {
-  //  const arr: T[] = hasRoot ? [root] : []
-  //  if (validators.isNot(root, 'Object')) return arr
-  //
-  //  Arrays.foreach<T>(converters.cast(root[childKey]), (e) => {
-  //    arr.push(e)
-  //
-  //    const children = Arrays.flatTree(e, childKey, false, delChildren);
-  //    if (validators.notEmpty(children)) arr.push(...children)
-  //  })
-  //
-  //  if (delChildren) delete root[childKey]
-  //
-  //  return arr
-  //}
+  /**
+   * 去重复
+   * @param src 数组
+   * @param [cover=true] 是否对参数数组产生副作用
+   * @param [akm] 元素唯一值生成器
+   * @return 处理结果. 如果 <i>cover===false</i> 结果为新数组, 否则返回 <i>src</i>
+   */
+  static unique<T>(
+    src: T[],
+    cover = true,
+    akm?: fns.ArrayKeyMapper<T>
+  ): T[] {
+    if (0 === src.length) return src;
+
+    const keyMapper = Builders.toArrayKeyMapperHandler(akm, 'element');
+    const result: T[] = [];
+    const keys: string[] = [];
+    this.foreach(src, el => {
+      const key = keyMapper(el);
+      if (!keys.includes(key)) {
+        keys.push(key);
+        result.push(el.item);
+      }
+    });
+
+    if (cover) {
+      src.length = 0;
+      Arrays.concat(src, result);
+    }
+
+    return src;
+  }
+
+  /**
+   * 生成一组连续值数组. 如果 <i> start >= end</i> 总是返回0长度数组.
+   * @param start 开始值(包含)
+   * @param end 结束值(包含)
+   * @return 数组长度: end - start + 1
+   */
+  static genNums(
+    start: number,
+    end: number
+  ): number[] {
+    if (0 >= end - start) return [];
+    const keyIter = new Array(end + 1).keys();
+    return [...keyIter].slice(start);
+  }
+
+  /**
+   * 树形映射
+   * @param arr 目标数组
+   * @param childKey 子节点在父节点的属性名, 覆盖现有属性名会报错.
+   * @param parentIndex 子节点指向父节点属性名.
+   * @param parentKey 被子节点指向的父节点属性名.
+   * @param [onlyRoot=false] 是否从根节点移除所有子节点.
+   */
+  static tree<T extends Record<CK, T[]> & Record<PK, any> & Record<PI, any>
+    , CK extends types.KeyOf<T>
+    , PK extends types.KeyOf<T>
+    , PI extends types.KeyOf<T>>(
+    arr: T[],
+    childKey: CK,
+    parentIndex: PI,
+    parentKey: PK,
+    onlyRoot = false
+  ): T[] {
+
+    // 按parentKey映射所有节点
+    const keyMapper: types.RecordS<T> = Arrays.toMap(arr, parentKey);
+
+    // 所有子节点映射值
+    const childrenIds: string[] = [];
+
+    Arrays.foreach(arr, el => {
+      const pid: types.KeyOf<T> = Jsons.get(el.item, parentIndex.toString());
+      const parent: T = keyMapper[pid];
+      if (!parent) return;
+
+      childrenIds.push(Jsons.get<string>(el.item, parentKey.toString()));
+      const children: T[CK] = Jsons.computeIfAbsent(parent, childKey, [] as any);
+      children.push(el.item);
+      parent[childKey] = Arrays.unique(children) as T[CK];
+    });
+
+    // 移除子节点
+    if (onlyRoot) {
+      Arrays.foreach(childrenIds, el => {
+        delete keyMapper[el.item];
+      });
+    }
+
+    return Object.values(keyMapper);
+  }
+
+  /**
+   * 树结构转列表
+   * @param root 根节点
+   * @param childKey 子节点列表属性
+   * @param [hasRoot=true] 是否包含根节点
+   * @param [delChildren=false] 是否删除子节点
+   */
+  static flatTreeSR<T extends Record<CK, T[]>, CK extends types.KeyOfOnly<T>>(
+    root: T,
+    childKey: CK,
+    hasRoot = true,
+    delChildren = false
+  ): T[] {
+    const arr: T[] = hasRoot ? [root] : [];
+    if (Validation.isNot(root, 'Object')) return arr;
+
+    Arrays.foreach<T>(root[childKey], (el) => {
+      arr.push(el.item);
+
+      const children = Arrays.flatTreeSR(el.item, childKey, false, delChildren);
+      if (Validation.notEmpty(children)) arr.push(...children);
+    });
+
+    if (delChildren) delete root[childKey];
+    return arr;
+  }
+
+  /**
+   * (多根)树结构转列表
+   * @param root 根节点
+   * @param childKey 子节点列表属性
+   * @param [hasRoot=true] 是否包含根节点
+   * @param [delChildren=false] 是否删除子节点
+   * @param [akm] 列表去重判定属性名或元素映射函数
+   */
+  static flatTreeMR<T extends Record<CK, T[]>, CK extends types.KeyOfOnly<T>>(
+    root: T[],
+    childKey: CK,
+    hasRoot = true,
+    delChildren = false,
+    akm?: fns.ArrayKeyMapper<T>,
+  ): T[] {
+    const result: T[] = [];
+    this.foreach(root, el => {
+      const nodes = this.flatTreeSR(el.item, childKey, hasRoot, delChildren);
+      this.concat(result, nodes);
+    });
+    return akm ? this.unique(result, false, akm) : result;
+  }
+
+  /**
+   * 校验数组元素索引是否有效
+   * @param element 数组元素
+   * @return 有效返回true，否则返回false
+   * @private
+   */
+  private static validateIndex<T>(element: types.ArrayIteratorItem<T>): boolean {
+    return 0 <= element.index;
+  }
 }

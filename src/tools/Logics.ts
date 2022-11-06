@@ -8,13 +8,13 @@ import Functions from '@/tools/Functions';
  */
 class Switcher<T, I> {
 
-  private valueInner!: T;
+  private valueInner?: T;
 
   constructor(
     private condition: boolean,
-    private value: fns.OrGetter<T, I>
+    value: fns.OrGetter<T, I>
   ) {
-    this.case(condition, value);
+    this.setValue(condition, value);
   }
 
   /**
@@ -27,7 +27,7 @@ class Switcher<T, I> {
     value: fns.OrGetter<T, I>
   ): Switcher<T, I> {
     if (this.condition) return this;
-    this.set(condition, value);
+    this.setValue(condition, value);
     return this;
   }
 
@@ -36,7 +36,7 @@ class Switcher<T, I> {
    * @param value 默认值
    */
   otherwise(value: fns.OrGetter<T, I>): Switcher<T, I> {
-    return this.set(!this.condition, value);
+    return this.setValue(!this.condition, value);
   }
 
   /**
@@ -56,7 +56,7 @@ class Switcher<T, I> {
   /**
    * 不匹配任意case时抛出异常. 该函数调用时机应当在获取数据之前
    * @param err 错误信息
-   * @see get
+   * @see getValue
    */
   otherwiseThrow(err?: string | Error) {
     return this.throw(true, err);
@@ -75,23 +75,23 @@ class Switcher<T, I> {
   ): Switcher<T, I> {
     if (!this.condition)
       throw Cast.error(err);
-    return this.set(condition, value);
+    return this.setValue(condition, value);
   }
 
   /**
    * 获取最终值
    */
-  get(): T;
+  getValue(): T;
 
   /**
    * 获取最终值
    * @param handler 值处理器
    */
-  get<R = T | void>(handler: fns.Handler<T, R>): R;
+  getValue<R = T>(handler: fns.Handler<T, R>): R;
 
-  get<R = T | void>(handler?: fns.Handler<T, R>): T | R {
-    if (Validation.isNot(handler, 'Function')) return this.valueInner;
-    return handler!(this.valueInner);
+  getValue<R = T | void>(handler?: fns.Handler<T, R>): T | R {
+    if (Validation.isNot(handler, 'Function')) return this.valueInner!;
+    return handler!(this.valueInner!);
   }
 
   /**
@@ -100,11 +100,11 @@ class Switcher<T, I> {
    * @param value 指定值
    * @private
    */
-  private set(
-    condition: boolean,
-    value: fns.OrGetter<T, I>
+  private setValue(
+    condition?: boolean,
+    value?: fns.OrGetter<T, I>
   ) {
-    this.condition = condition;
+    this.condition = condition ?? this.condition;
     if (this.condition)
       this.valueInner = Functions.execOrGetter(value);
     return this;

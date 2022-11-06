@@ -75,4 +75,20 @@ describe('Arrays.ts', () => {
     }
   });
 
+  test('index', () => {
+    {
+      // primitive
+      const a = [1, 2, 3];
+      const el = Arrays.index(a, 2);
+      expect(el).toEqual({ item: 2, index: 1 });
+    }
+
+    {
+      // complex
+      const a = [{ foo: 1 }, { foo: 2 }];
+      expect(Arrays.index(a, { foo: 2 }, 'foo')).toEqual({ item: { foo: 2 }, index: 1 });
+      expect(Arrays.index(a, { foo: 3 }, 'foo')).toEqual({ item: undefined, index: -1 });
+    }
+  });
+
 });

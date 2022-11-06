@@ -13,8 +13,9 @@ export namespace types {
     | string;
   export type RecordS<T> = Record<KeyOf<T>, T>;
   export type KeyType = string | number;
-  export type KeyOf<T> = keyof T | KeyType;
-  export type FalsyLike = false | any;
+  export type KeyOfOnly<T> = keyof T;
+  export type KeyOf<T> = KeyOfOnly<T> | KeyType;
+  export type FalsyLike = boolean | void;
 
   /** 数组元素 */
   export type IteratorItem<T, K = KeyType> = {
@@ -25,7 +26,12 @@ export namespace types {
   };
 
   /**
+   * 数组迭代元素
+   */
+  export type ArrayIteratorItem<T> = IteratorItem<T, number>;
+
+  /**
    * 可控数据
    */
-  export type Nillable<T> = null | undefined | T;
+  export type Nillable<T> = void | null | undefined | T;
 }

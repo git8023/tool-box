@@ -5,6 +5,7 @@ import Jsons from '@/tools/Jsons';
 import Validation from '@/tools/Validation';
 import Logics from '@/tools/Logics';
 import Functions from '@/tools/Functions';
+import Cast from '@/tools/Cast';
 
 export default class Builders {
 
@@ -50,7 +51,7 @@ export default class Builders {
   /**
    * 构建判断两个对象是否相等的函数, 其中返回函数的参数是一个迭代元素对象
    * @param target 匹配源对象
-   * @param [predictor] 断言属性或断言函数
+   * @param [predictor=(el=>el===target)] 断言属性或断言函数
    */
   static equalsOtherElement<T>(
     target: T,
@@ -96,6 +97,18 @@ export default class Builders {
       .case(Validation.is(akm, 'String'), Builders.iteratorGetter(akm as string))
       .case(mod === 'element', Builders.iteratorGetter())
       .otherwiseThrow(Error('predictor无效. 仅支持String|Function'));
-    return switcher.get();
+    return switcher.getValue();
+  }
+
+  /**
+   * 构建具有固定参数的调用函数
+   * @param fn 函数引用
+   * @param [args] 参数
+   */
+  static runner<T>(
+    fn: fns.Function,
+    ...args: any[]
+  ): T {
+    return Cast.as(() => fn(...args));
   }
 }

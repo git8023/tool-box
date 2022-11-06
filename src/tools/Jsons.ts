@@ -233,7 +233,7 @@ export default class Jsons {
    * @param key 属性名
    * @param fp 属性值计算过程
    */
-  static computeIfAbsent<T extends object, K extends keyof T, R extends T[K]>(
+  static computeIfAbsent<T extends Record<K, R>, K extends keyof T = keyof T, R extends T[K] = T[K]>(
     store: T,
     key: K,
     fp: R | ((
