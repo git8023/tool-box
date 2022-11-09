@@ -72,6 +72,11 @@ export namespace fns {
   export type ArrayIteratorHandler<T, R = types.FalsyLike> = IteratorHandler<T, R, number>;
 
   /**
+   * 对象叠氮处理器, 返回false终止
+   */
+  export type ObjectIteratorHandler<T, R = types.FalsyLike> = IteratorHandler<T, R, string>;
+
+  /**
    * 数组元素断言
    */
   export type ArrayPredictor<T> = types.KeyOf<T> | fns.ArrayIteratorHandler<T, boolean>;

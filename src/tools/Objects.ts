@@ -14,14 +14,12 @@ export default class Objects {
     target: T,
     prop?: types.KeyOf<T>
   ) {
-    if (src === target) return true;
-
     if (prop) {
       const srcVal = Jsons.get(src, `${String(prop)}`);
       const tgtVal = Jsons.get(target, `${String(prop)}`);
       return srcVal === tgtVal;
     }
 
-    return false;
+    return src === target;
   }
 }
