@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script type="module">
+
+  import {Promises} from "../dist/tool-box.esm.js";
+  let pc = Promises.control(new Promise(resolve => {
+    setTimeout(resolve, 3000, 1)
+  }));
+  pc.then(console.log)
+  pc.abort()
+
+</script>
+</body>
+</html>

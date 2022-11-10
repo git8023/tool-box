@@ -1,6 +1,7 @@
 import { fns } from '@/types/fns';
 import Validation from '@/tools/Validation';
 import Cast from '@/tools/Cast';
+import Promises from '@/tools/Promises';
 
 export default class Functions {
 
@@ -14,7 +15,7 @@ export default class Functions {
     fn?: fns.Handler<T, R>,
     ...args: any[]
   ): R | undefined {
-    return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, args) : undefined;
+    return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, ...args) : undefined;
   }
 
   /**
@@ -26,4 +27,17 @@ export default class Functions {
   ): T {
     return vog instanceof Function ? Functions.call<T, I>(vog)! : vog;
   }
+
+  /**
+   * 执行异步获取函数
+   * @param oag 数据或同步/异步数据获取函数
+   */
+  static execOrAsyncGetter<T>(oag: fns.OrAsyncGetter<void, T>): Promise<T> {
+    if (oag instanceof Promise)
+      return oag as Promise<T>;
+
+    const data = this.execOrGetter(oag as fns.OrGetter<T>);
+    return Promises.from(data);
+  }
+
 }

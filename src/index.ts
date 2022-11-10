@@ -1,1 +1,1 @@
-export * from './pkg'
+export { default as Promises } from '@/tools/Promises';

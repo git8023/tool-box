@@ -22,6 +22,11 @@ export namespace fns {
   export type Consume<T> = Handler<T, void>;
 
   /**
+   * 可调用的函数
+   */
+  export type Caller = Consume<void>;
+
+  /**
    * 数据获取处理器
    */
   export type Getter<R, T = void> = Handler<T, R>;
@@ -39,7 +44,7 @@ export namespace fns {
   /**
    * 异步数据或异步数据获取处理器
    */
-  export type OrAsyncGetter<T, R> = Promise<R> | AsyncGetter<T, Promise<R>>;
+  export type OrAsyncGetter<T, R> = OrGetter<R, T> | Promise<R> | AsyncGetter<T, Promise<R>>;
 
   /**
    * 对象映射处理器

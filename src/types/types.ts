@@ -59,4 +59,14 @@ export namespace types {
    * 可控数据
    */
   export type Nillable<T> = void | null | undefined | T;
+
+  /**
+   * Promise控制增强类
+   */
+  export interface PromiseControl<T> extends Promise<T> {
+    /**
+     * 终止
+     */
+    abort():void;
+  }
 }
