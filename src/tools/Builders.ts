@@ -1,13 +1,13 @@
 import { types } from '@/types/types';
 import { fns } from '@/types/fns';
-import Objects from '@/tools/Objects';
-import Jsons from '@/tools/Jsons';
-import Validation from '@/tools/Validation';
-import Logics from '@/tools/Logics';
-import Functions from '@/tools/Functions';
-import Cast from '@/tools/Cast';
+import { Objects } from '@/tools/Objects';
+import { Jsons } from '@/tools/Jsons';
+import { Validation } from '@/tools/Validation';
+import { Logics } from '@/tools/Logics';
+import { Functions } from '@/tools/Functions';
+import { Cast } from '@/tools/Cast';
 
-export default class Builders {
+export class Builders {
 
   /**
    * 构建返回参数值的函数

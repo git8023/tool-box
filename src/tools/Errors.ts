@@ -1,6 +1,6 @@
-import Validation from '@/tools/Validation';
+import { Validation } from '@/tools/Validation';
 
-export default class Errors {
+export class Errors {
 
   /**
    * 包装为错误对象

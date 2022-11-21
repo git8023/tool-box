@@ -1,8 +1,7 @@
-import Validation from '@/tools/Validation';
-import Objects from '@/tools/Objects';
-import Arrays from '@/tools/Arrays';
+import { Validation } from '@/tools/Validation';
+import { Arrays } from '@/tools/Arrays';
 import { types } from '@/types/types';
-import Cast from '@/tools/Cast';
+import { Cast } from '@/tools/Cast';
 
 /**
  * ONGL表达式解析对象
@@ -65,7 +64,7 @@ class Ognl {
 /**
  * 属性链工具
  */
-export default class PropChains {
+export class PropChains {
 
   /**
    * 获取数组对象的值

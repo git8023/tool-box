@@ -1,11 +1,10 @@
 import { fns } from '@/types/fns';
 import { types } from '@/types/types';
-import Functions from '@/tools/Functions';
-import Errors from '@/tools/Errors';
-import Validation from '@/tools/Validation';
-import Cast from '@/tools/Cast';
-import FalsyLike = types.FalsyLike;
-import Promises from '@/tools/Promises';
+import { Functions } from '@/tools/Functions';
+import { Errors } from '@/tools/Errors';
+import { Validation } from '@/tools/Validation';
+import { Cast } from '@/tools/Cast';
+import { Promises } from '@/tools/Promises';
 
 /**
  * 错误事件数据
@@ -48,12 +47,12 @@ type Event<T, R> = {
   /**
    * 开始执行前调用
    */
-  begin?: fns.Handler<AsyncArrayStream<T, R>, FalsyLike>,
+  begin?: fns.Handler<AsyncArrayStream<T, R>, types.FalsyLike>,
 
   /**
    * 元素节点处理
    */
-  element?: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, FalsyLike>>,
+  element?: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>,
 
   /**
    * 目标数组为空时执行.
@@ -73,7 +72,7 @@ type Event<T, R> = {
   error?: fns.Handler<ErrorEventData<T, R>, R>,
 }
 
-export default class AsyncArrayStream<T, R = any> {
+export class AsyncArrayStream<T, R = any> {
 
   /**
    * 游标
@@ -149,7 +148,7 @@ export default class AsyncArrayStream<T, R = any> {
    * 监听开始处理元素前事件
    * @param handler 事件处理器
    */
-  onBegin(handler: fns.Handler<AsyncArrayStream<T, R>, FalsyLike>): AsyncArrayStream<T, R> {
+  onBegin(handler: fns.Handler<AsyncArrayStream<T, R>, types.FalsyLike>): AsyncArrayStream<T, R> {
     this.events.begin = handler;
     return this;
   }
@@ -158,7 +157,7 @@ export default class AsyncArrayStream<T, R = any> {
    * 监听节点事件
    * @param handler 事件处理器
    */
-  onElement(handler: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, FalsyLike>>): AsyncArrayStream<T, R> {
+  onElement(handler: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>): AsyncArrayStream<T, R> {
     this.events.element = handler;
     return this;
   }

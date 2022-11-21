@@ -1,6 +1,6 @@
 import { types } from '@/types/types';
 
-export default class Validation {
+export class Validation {
 
   /**
    * 校验一系列值是否为不可用的值(null/undefined)
@@ -86,8 +86,8 @@ export default class Validation {
 
   /**
    * 校验是否不是指定类型
-   * @param v {any} 值
-   * @param type {PrimaryTypeString} 类型
+   * @param v 值
+   * @param type 类型
    * @return 如果是指定类型返回true, 否则返回false
    */
   static isNot(

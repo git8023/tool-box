@@ -1,4 +1,4 @@
-import Validation from '@/tools/Validation';
+import { Validation } from '@/tools/Validation';
 
 export interface $Storage {
   /**
@@ -28,7 +28,7 @@ export interface $Storage {
   clear(): void;
 }
 
-export default class Storages {
+export class Storages {
 
   private static $(storage: Storage): $Storage {
     const that: $Storage = {

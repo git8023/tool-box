@@ -1,13 +1,13 @@
 import { types } from '@/types/types';
-import Cast from '@/tools/Cast';
-import Validation from '@/tools/Validation';
+import { Cast } from '@/tools/Cast';
+import { Validation } from '@/tools/Validation';
 import { fns } from '@/types/fns';
-import Jsons from '@/tools/Jsons';
-import Functions from '@/tools/Functions';
-import Builders from '@/tools/Builders';
-import Logics from '@/tools/Logics';
+import { Jsons } from '@/tools/Jsons';
+import { Functions } from '@/tools/Functions';
+import { Builders } from '@/tools/Builders';
+import { Logics } from '@/tools/Logics';
 
-export default class Arrays {
+export class Arrays {
 
   /**
    * 对象数组通过指定属性名转换为JSON对象

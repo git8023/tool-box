@@ -1,11 +1,11 @@
 // 常规通用工具
-import Validation from '@/tools/Validation';
-import Arrays from '@/tools/Arrays';
-import Cast from '@/tools/Cast';
+import { Validation } from '@/tools/Validation';
+import { Arrays } from '@/tools/Arrays';
+import { Cast } from '@/tools/Cast';
 import { fns } from '@/types/fns';
-import PropChains from '@/tools/PropChains';
+import { PropChains } from '@/tools/PropChains';
 
-export default class Jsons {
+export class Jsons {
 
   /**
    * 浅层合并两个对象

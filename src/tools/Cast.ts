@@ -1,4 +1,4 @@
-export default class Cast {
+export class Cast {
 
   /**
    * undefined 初始化为任意类型

@@ -1,10 +1,10 @@
 import { types } from '@/types/types';
 import { fns } from '@/types/fns';
-import Cast from '@/tools/Cast';
-import Logs from '@/tools/Logs';
+import { Cast } from '@/tools/Cast';
+import { Logs } from '@/tools/Logs';
 
 
-export default class Promises {
+export class Promises {
 
   /**
    * 数据包装为异步

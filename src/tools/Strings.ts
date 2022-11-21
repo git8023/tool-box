@@ -1,8 +1,8 @@
-import Jsons from '@/tools/Jsons';
-import Arrays from '@/tools/Arrays';
-import Validation from '@/tools/Validation';
+import { Jsons } from '@/tools/Jsons';
+import { Arrays } from '@/tools/Arrays';
+import { Validation } from '@/tools/Validation';
 
-export default class Strings {
+export class Strings {
 
   /**
    * 字符串替换

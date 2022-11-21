@@ -1,9 +1,9 @@
 import { fns } from '@/types/fns';
-import Validation from '@/tools/Validation';
-import Cast from '@/tools/Cast';
-import Promises from '@/tools/Promises';
+import { Validation } from '@/tools/Validation';
+import { Cast } from '@/tools/Cast';
+import { Promises } from '@/tools/Promises';
 
-export default class Functions {
+export class Functions {
 
   /**
    * 调用函数

@@ -1,7 +1,7 @@
-import Cast from '@/tools/Cast';
+import { Cast } from '@/tools/Cast';
 import { fns } from '@/types/fns';
-import Validation from '@/tools/Validation';
-import Functions from '@/tools/Functions';
+import { Validation } from '@/tools/Validation';
+import { Functions } from '@/tools/Functions';
 
 /**
  * 条件赋值逻辑
@@ -111,7 +111,7 @@ class Switcher<T, I> {
   }
 }
 
-export default class Logics {
+export class Logics {
 
   /**
    * 构建条件赋值逻辑对象

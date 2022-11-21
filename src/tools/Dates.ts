@@ -1,8 +1,8 @@
-import Jsons from '@/tools/Jsons';
-import Arrays from '@/tools/Arrays';
-import Validation from '@/tools/Validation';
+import { Jsons } from '@/tools/Jsons';
+import { Arrays } from '@/tools/Arrays';
+import { Validation } from '@/tools/Validation';
 
-export default class Dates {
+export class Dates {
 
   /**
    * 解析日期字符串或格式化为另一种日期规则字符串

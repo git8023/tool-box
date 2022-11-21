@@ -1,7 +1,7 @@
 import { types } from '@/types/types';
-import Jsons from '@/tools/Jsons';
+import { Jsons } from '@/tools/Jsons';
 
-export default class Objects {
+export class Objects {
 
   /**
    * 比较两个对象是否相等

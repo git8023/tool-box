@@ -1,6 +1,6 @@
-import Arrays from '@/tools/Arrays';
-import Validation from '@/tools/Validation';
-import Dates from '@/tools/Dates';
+import { Arrays } from '@/tools/Arrays';
+import { Validation } from '@/tools/Validation';
+import { Dates } from '@/tools/Dates';
 
 export enum LogLevel {
   TRACE,
@@ -214,4 +214,4 @@ export class ConsoleLogger implements ILogger {
   }
 }
 
-export default ConsoleLogger.instance;
+export const Logs = ConsoleLogger.instance;
