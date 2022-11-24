@@ -1,7 +1,7 @@
-import { fns } from '@/types/fns';
-import { Validation } from '@/tools/Validation';
-import { Cast } from '@/tools/Cast';
-import { Promises } from '@/tools/Promises';
+import { fns } from '../types/fns';
+import { Validation } from '../tools/Validation';
+import { Cast } from './Cast';
+import { Promises } from './Promises';
 
 export class Functions {
 

@@ -1,7 +1,7 @@
-import { types } from '@/types/types';
-import { fns } from '@/types/fns';
-import { Cast } from '@/tools/Cast';
-import { Logs } from '@/tools/Logs';
+import { types } from '../types/types';
+import { fns } from '../types/fns';
+import { Cast } from '../tools/Cast';
+import { Logs } from './Logs';
 
 
 export class Promises {

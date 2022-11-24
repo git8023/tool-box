@@ -1,4 +1,4 @@
-import AsyncArrayStream from '../src/tools/AsyncArrayStream';
+import { AsyncArrayStream } from '../src/tools/AsyncArrayStream';
 
 describe('AsyncArrayStream', () => {
 

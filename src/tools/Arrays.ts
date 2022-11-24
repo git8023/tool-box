@@ -1,11 +1,11 @@
-import { types } from '@/types/types';
-import { Cast } from '@/tools/Cast';
-import { Validation } from '@/tools/Validation';
-import { fns } from '@/types/fns';
-import { Jsons } from '@/tools/Jsons';
-import { Functions } from '@/tools/Functions';
-import { Builders } from '@/tools/Builders';
-import { Logics } from '@/tools/Logics';
+import { types } from '../types/types';
+import { Cast } from './Cast';
+import { Validation } from './Validation';
+import { fns } from '../types/fns';
+import { Jsons } from './Jsons';
+import { Functions } from './Functions';
+import { Builders } from './Builders';
+import { Logics } from './Logics';
 
 export class Arrays {
 

@@ -1,4 +1,4 @@
-import { Validation } from '@/tools/Validation';
+import { Validation } from '../tools/Validation';
 
 export interface $Storage {
   /**

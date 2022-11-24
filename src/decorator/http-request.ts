@@ -1,9 +1,14 @@
-import { vo } from '@/types/vo';
-import { vmsNet } from '@/types/vms-net';
-import { Validation } from '@/tools/Validation';
-import { DataPool } from '@/decorator/data-pool';
+import { vo } from '../types/vo';
+import { vmsNet } from '../types/vms-net';
+import { Validation } from '../tools/Validation';
+import { DataPool } from './data-pool';
 
-const request = DataPool.get('AXIOS_SERVICE');
+class Request {
+  static get axios() {
+    return DataPool.get('AXIOS_SERVICE');
+  }
+}
+
 
 /**
  * GET 请求
@@ -18,7 +23,7 @@ export function Get(uri: string) {
     target[fnKey] = (args?: vmsNet.Parameters) => {
       args = args || {};
       const filledUri = setPathVariable(uri, args);
-      return request.get(filledUri, { params: args!.params }).then(extractResponseData);
+      return Request.axios.get(filledUri, { params: args!.params }).then(extractResponseData);
     };
   };
 }
@@ -94,7 +99,7 @@ const generateWithPost = (
     target[fnKey] = (args?: vmsNet.Parameters<any, any>) => {
       args = args || {};
       const filledUri = setPathVariable(uri, args);
-      return request[method](filledUri, args.params).then(extractResponseData);
+      return Request.axios[method](filledUri, args.params).then(extractResponseData);
     };
 
   };

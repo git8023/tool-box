@@ -1,5 +1,5 @@
-import Promises from '../src/tools/Promises';
-import Logs from '../src/tools/Logs';
+import { Promises } from '../src/tools/Promises';
+import { Logs } from '../src/tools/Logs';
 
 describe('Promises', () => {
 

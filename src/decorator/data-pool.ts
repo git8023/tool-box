@@ -1,4 +1,4 @@
-import { types } from '@/types/types';
+import { types } from '../types/types';
 
 export class DataPoolKey {
   static readonly AXIOS_SERVICE = Symbol('AXIOS_SERVICE');

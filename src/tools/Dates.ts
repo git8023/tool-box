@@ -1,6 +1,6 @@
-import { Jsons } from '@/tools/Jsons';
-import { Arrays } from '@/tools/Arrays';
-import { Validation } from '@/tools/Validation';
+import { Jsons } from './Jsons';
+import { Arrays } from './Arrays';
+import { Validation } from './Validation';
 
 export class Dates {
 

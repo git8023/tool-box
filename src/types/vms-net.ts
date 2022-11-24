@@ -36,7 +36,7 @@ export namespace vmsNet {
    *
    * @function
    */
-  export interface GetMapping<R, P = void, PV = void> {
+  export interface GetMapping<R = void, P = void, PV = void> {
     (args?: Parameters<P, PV>): Promise<R>
   }
 

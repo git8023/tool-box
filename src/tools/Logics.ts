@@ -1,7 +1,7 @@
-import { Cast } from '@/tools/Cast';
-import { fns } from '@/types/fns';
-import { Validation } from '@/tools/Validation';
-import { Functions } from '@/tools/Functions';
+import { Cast } from './Cast';
+import { fns } from '../types/fns';
+import { Validation } from './Validation';
+import { Functions } from './Functions';
 
 /**
  * 条件赋值逻辑

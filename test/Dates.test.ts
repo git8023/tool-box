@@ -1,4 +1,4 @@
-import Dates from '../src/tools/Dates';
+import { Dates } from '../src/tools/Dates';
 
 describe('Dates.ts', () => {
 

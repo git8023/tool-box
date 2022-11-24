@@ -1,9 +1,9 @@
 // 常规通用工具
-import { Validation } from '@/tools/Validation';
-import { Arrays } from '@/tools/Arrays';
-import { Cast } from '@/tools/Cast';
-import { fns } from '@/types/fns';
-import { PropChains } from '@/tools/PropChains';
+import { Validation } from './Validation';
+import { Arrays } from './Arrays';
+import { Cast } from './Cast';
+import { fns } from '../types/fns';
+import { PropChains } from './PropChains';
 
 export class Jsons {
 

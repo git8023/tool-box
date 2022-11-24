@@ -1,4 +1,4 @@
-import Arrays from '../src/tools/Arrays';
+import { Arrays } from '../src/tools/Arrays';
 
 type User = {
   name: string,

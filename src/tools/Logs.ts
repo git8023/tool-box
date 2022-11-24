@@ -1,6 +1,6 @@
-import { Arrays } from '@/tools/Arrays';
-import { Validation } from '@/tools/Validation';
-import { Dates } from '@/tools/Dates';
+import { Arrays } from './Arrays';
+import { Validation } from './Validation';
+import { Dates } from './Dates';
 
 export enum LogLevel {
   TRACE,

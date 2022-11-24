@@ -1,11 +1,11 @@
-import { types } from '@/types/types';
-import { fns } from '@/types/fns';
-import { Objects } from '@/tools/Objects';
-import { Jsons } from '@/tools/Jsons';
-import { Validation } from '@/tools/Validation';
-import { Logics } from '@/tools/Logics';
-import { Functions } from '@/tools/Functions';
-import { Cast } from '@/tools/Cast';
+import { types } from '../types/types';
+import { fns } from '../types/fns';
+import { Objects } from './Objects';
+import { Jsons } from './Jsons';
+import { Validation } from './Validation';
+import { Logics } from './Logics';
+import { Functions } from './Functions';
+import { Cast } from './Cast';
 
 export class Builders {
 

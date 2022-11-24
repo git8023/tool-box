@@ -1,10 +1,9 @@
-import { Validation } from '@/tools/Validation';
-import { Arrays } from '@/tools/Arrays';
-import { types } from '@/types/types';
-import { Cast } from '@/tools/Cast';
+import { Validation } from './Validation';
+import { Arrays } from './Arrays';
+import { Cast } from './Cast';
 
 /**
- * ONGL表达式解析对象
+ * OGNL表达式解析对象
  */
 class Ognl {
   floors = [] as number[];
@@ -143,16 +142,4 @@ export class PropChains {
     return PropChains.getValue(valObj, newOgnl);
   }
 
-  /**
-   * 设置属性值
-   * @param target 目标对象
-   * @param ognl ognl表达式
-   */
-  static setValue<R>(
-    target: any,
-    ognl: string
-  ): types.Nillable<R> {
-    // todo 设置值
-    return null;
-  }
 }

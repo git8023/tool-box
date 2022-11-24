@@ -1,5 +1,5 @@
-import { types } from '@/types/types';
-import { Jsons } from '@/tools/Jsons';
+import { types } from '../types/types';
+import { Jsons } from './Jsons';
 
 export class Objects {
 
