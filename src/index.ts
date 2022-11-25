@@ -22,3 +22,6 @@ export { fns } from './types/fns';
 export { types } from './types/types';
 export { vmsNet } from './types/vms-net';
 export { vo } from './types/vo';
+
+import './style/dc-base.scss';
+import './style/dc-webkit-scrollbar.scss';
