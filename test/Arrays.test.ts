@@ -41,11 +41,14 @@ describe('Arrays.ts', () => {
     const a = [{ foo: 1, bar: 1 }, { foo: 2, bar: 2 }, { foo: 3, bar: 3 }, el];
     const b = [{ foo: 2, bar: 1 }, el];
 
-    const foo = Arrays.intersection(a, b, 'foo');
-    expect(foo.map(e => e.foo)).toEqual([2, 3, el.foo]);
+    const r1 = Arrays.intersection(a, b, 'foo');
+    expect(r1.map(e => e.foo)).toEqual([2, 3, el.foo]);
 
-    const bar = Arrays.intersection(a, b, 'bar');
-    expect(bar.map(e => e.bar)).toEqual([1, 3, el.bar]);
+    const r2 = Arrays.intersection(a, b, 'bar');
+    expect(r2.map(e => e.bar)).toEqual([1, 3, el.bar]);
+
+    const r3 = Arrays.intersection(a, b);
+    expect(r3[0]).toEqual(el);
   });
 
   test('seek', () => {

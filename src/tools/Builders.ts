@@ -33,7 +33,12 @@ export class Builders {
    * @return key ? (e=>e[key]) : (e=>e)
    */
   static iteratorGetter<T, I extends types.IteratorItem<E>, E = any>(key?: keyof E): T {
-    return ((e: I) => Validation.notEmpty(key) ? Jsons.get(e.item, key!.toString()) : e.item) as T;
+    const fn = (e: I) => {
+      if (Validation.notEmpty(key))
+        return Jsons.get(e.item, key!.toString());
+      return e.item;
+    };
+    return fn as T;
   }
 
   /**
@@ -92,12 +97,12 @@ export class Builders {
     akm?: fns.ArrayKeyMapper<T, R>,
     mod: 'throw' | 'element' = 'throw'
   ): fns.ArrayKeyMapperHandler<T, R> {
-    const switcher = Logics
+    return Logics
       .case(akm instanceof Function, () => akm as fns.ArrayKeyMapperHandler<T, R>)
-      .case(Validation.is(akm, 'String'), Builders.iteratorGetter(akm as string))
-      .case(mod === 'element', Builders.iteratorGetter())
-      .otherwiseThrow(Error('predictor无效. 仅支持String|Function'));
-    return switcher.getValue();
+      .case(Validation.is(akm, 'String'), () => Builders.iteratorGetter(akm as string) as R)
+      .case(mod === 'element', () => Builders.iteratorGetter() as R)
+      .otherwiseThrow(Error('predictor无效. 仅支持String|Function'))
+      .getValue();
   }
 
   /**

@@ -18,10 +18,7 @@ module.exports = {
     '@typescript-eslint'
   ],
   'rules': {
-    'indent': [
-      'error',
-      2
-    ],
+    'indent': 'off',
     'linebreak-style': [
       'error',
       'windows'
@@ -40,6 +37,8 @@ module.exports = {
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-this-alias': 'off',
-    'no-undef': 'off'
+    'no-undef': 'off',
+    '@typescript-eslint/no-misused-new': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
   }
 };

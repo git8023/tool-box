@@ -1,3 +1,7 @@
+export { Get, Put, Post, Delete } from './decorator/http-request';
+export { DataPool, DataPoolKey } from './decorator/data-pool';
+export { Events } from './decorator/events';
+
 export { Arrays } from './tools/Arrays';
 export { AsyncArrayStream } from './tools/AsyncArrayStream';
 export { Builders } from './tools/Builders';
@@ -14,9 +18,6 @@ export { PropChains } from './tools/PropChains';
 export { Storages } from './tools/Storages';
 export { Strings } from './tools/Strings';
 export { Validation } from './tools/Validation';
-
-export { Get, Put, Post, Delete } from './decorator/http-request';
-export { DataPool, DataPoolKey } from './decorator/data-pool';
 
 export { fns } from './types/fns';
 export { types } from './types/types';

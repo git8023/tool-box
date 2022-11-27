@@ -218,8 +218,8 @@ export class Jsons {
    */
   static get<R>(
     o: any,
-    propChain: string
+    propChain: (keyof R) | string
   ): R {
-    return PropChains.getValue(o, propChain);
+    return PropChains.getValue(o, String(propChain));
   }
 }
