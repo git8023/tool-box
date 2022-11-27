@@ -67,6 +67,36 @@ export namespace types {
     /**
      * 终止
      */
-    abort():void;
+    abort(): void;
   }
+}
+
+
+export namespace vuex {
+
+  export type ActionContext<S, R = any> = {
+    state: S;
+    rootState: R;
+    commit(
+      type: string,
+      ...args: any[]
+    ): void;
+  }
+
+  export type MutationTree<T> = types.RecordS<(
+    state: T,
+    payload?: any
+  ) => any>
+
+  export type ActionTree<T, R = any> = types.RecordS<(
+    ctx: ActionContext<T, R>,
+    payload?: any
+  ) => void>
+
+  export type GetterTree<S, R> = types.RecordS<(
+    state: S,
+    getters: any,
+    rootState: R,
+    rootGetters: any
+  ) => any>;
 }

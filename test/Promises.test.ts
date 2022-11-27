@@ -12,4 +12,8 @@ describe('Promises', () => {
     pc.abort();
   });
 
+  test('of', () => {
+    Promises.of(() => 1).then((v) => expect(v).toBe(1));
+  });
+
 });

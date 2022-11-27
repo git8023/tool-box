@@ -346,13 +346,13 @@ export class Arrays {
     arr: Array<T>,
     propChain: K
   ): Array<P> {
-    const vals: P[] = [];
+    const vs: P[] = [];
     Arrays.foreach(arr, (item) => {
       const val: P = Jsons.get(item.item, propChain);
       if (Validation.notEmpty(val))
-        vals.push(val);
+        vs.push(val);
     });
-    return vals;
+    return vs;
   }
 
   /**

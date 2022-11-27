@@ -1,5 +1,5 @@
 import { fns } from '../types/fns';
-import { Validation } from '../tools/Validation';
+import { Validation } from './Validation';
 import { Cast } from './Cast';
 import { Promises } from './Promises';
 
@@ -40,4 +40,29 @@ export class Functions {
     return Promises.from(data);
   }
 
+  /**
+   * 延迟执行
+   * @param call 函数体
+   * @param [loop=false] 是否持续执行
+   * @param [lazy=0] 延迟时间(ms)
+   * @param [immediate=false] 立即执行一次(异步)
+   */
+  static timer(
+    call: fns.Caller,
+    loop = false,
+    lazy = 0,
+    immediate = false,
+  ) {
+    if (immediate) {
+      call();
+      if (!loop)
+        return;
+    }
+
+    setTimeout(() => {
+      Promises.of(call).then(() => {
+        loop && this.timer(call, loop, lazy);
+      });
+    }, lazy);
+  }
 }

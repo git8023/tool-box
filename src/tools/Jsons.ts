@@ -216,9 +216,9 @@ export class Jsons {
    * @param propChain 属性链; e.g: foo.bar, foo[0].bar, ...
    * @return 属性值
    */
-  static get<R>(
-    o: any,
-    propChain: (keyof R) | string
+  static get<R, T = any>(
+    o: T,
+    propChain: (keyof T) | string
   ): R {
     return PropChains.getValue(o, String(propChain));
   }

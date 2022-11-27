@@ -1,7 +1,8 @@
 import { types } from '../types/types';
 import { fns } from '../types/fns';
-import { Cast } from '../tools/Cast';
+import { Cast } from './Cast';
 import { Logs } from './Logs';
+import { Validation } from './Validation';
 
 
 export class Promises {
@@ -12,6 +13,26 @@ export class Promises {
    */
   static from<T>(data: T): Promise<T> {
     return Promise.resolve(data);
+  }
+
+  /**
+   * 包装数据或数据获取器
+   * @param og 数据或数据获取器
+   */
+  static of<T = void>(og: fns.OrGetter<T>) {
+    if (Validation.isFunction(og))
+      return new Promise((
+        resolve,
+        reject
+      ) => {
+        try {
+          const data = (og as fns.Getter<T>)();
+          resolve(data);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    return this.from(og as T);
   }
 
   /**
