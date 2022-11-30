@@ -20,7 +20,7 @@ export class Broadcast<C, K = keyof C> {
   emit(
     channel: K,
     args?: any,
-  ): Broadcast<C,K> {
+  ): Broadcast<C, K> {
     const handlers = this.get(channel);
     Arrays.foreach(handlers, (el) => {
       Functions.call(el.item, args);
@@ -33,14 +33,18 @@ export class Broadcast<C, K = keyof C> {
    * @param channel 频道
    * @param fn 处理函数
    * @param [immediate=false] 是否立即执行一次
+   * @param [lazy=0] 延迟执行, 仅<i>immediate===true</i>时有效
+   * @param [args=undefined] 执行参数
    */
   on(
     channel: K,
     fn: fns.Consume<any>,
     immediate = false,
+    lazy = 0,
+    ...args: any[]
   ): Broadcast<C, K> {
     this.get(channel).push(fn);
-    if (immediate) Functions.call(fn);
+    Functions.timer(fn, false, lazy, immediate, ...args);
     return this;
   }
 

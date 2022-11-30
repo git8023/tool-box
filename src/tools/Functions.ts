@@ -46,15 +46,17 @@ export class Functions {
    * @param [loop=false] 是否持续执行
    * @param [lazy=0] 延迟时间(ms)
    * @param [immediate=false] 立即执行一次(异步)
+   * @param [args=undefined] 执行参数
    */
   static timer(
     call: fns.Caller,
     loop = false,
     lazy = 0,
     immediate = false,
+    ...args: any[]
   ) {
     if (immediate) {
-      call();
+      Functions.call(call, ...args);
       if (!loop)
         return;
     }
