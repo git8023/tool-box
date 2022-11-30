@@ -1,6 +1,7 @@
 import { createDecorator } from 'vue-class-component';
 import { Logs } from '../tools/Logs';
 import { Strings } from '../tools/Strings';
+import { Validation } from '../tools/Validation';
 
 export class Events {
 
@@ -70,6 +71,39 @@ export class Events {
         clearTimeout(originFnTimer);
         interrupter.bind(this)(...args);
       };
+    });
+  }
+
+  /**
+   * 记录日志
+   * @param [params=true] 打印请求参数
+   * @param [returns=false] 打印返回值
+   */
+  static log(
+    params = true,
+    returns = true
+  ) {
+
+    return createDecorator((
+      vm,
+      fnKey
+    ) => {
+
+      const fn = vm.methods[fnKey];
+      vm.methods[fnKey] = (...args: any[]) => {
+
+        const filename = String(vm.__file).split('/').pop();
+        const vmClsName = String(filename).split('.')[0];
+        const prefix = `[${vmClsName}.${fnKey}]`;
+        if (params) Logs.debug(prefix, ' Parameters: ', args);
+
+        const data = fn(...args);
+        if (returns && Validation.notNullOrUndefined(data))
+          Logs.debug(prefix, ' Returns: ', data);
+
+        return data;
+      };
+
     });
   }
 
