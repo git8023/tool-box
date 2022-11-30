@@ -3,47 +3,42 @@ import { vuex } from '../types/types';
 /**
  * <h1>1. 定义模块</h1>
  * <pre>
- * import { ActionTree, GetterTree, Module, MutationTree } from 'vuex';
- * import StoreTools from '@/util/store-tools';
+ * import {
+ *   ActionTree, GetterTree, Module, MutationTree,
+ * } from 'vuex';
+ * import { StoreTools, types } from '@hyong8023/tool-box';
  *
- * // 数据结构
- * export interface ISystem {
- *   // 激活的菜单
- *   test: string,
- * }
- *
- * // 数据类型别名
- * type T = ISystem;
- *
- * // 获取默认状态
- * function getDefaultState(): T {
+ * function getDefaultState() {
  *   return {
- *     test: undefined,
+ *     token: '',
  *   };
  * }
  *
- * // 默认状态值
  * const state = getDefaultState();
- * class System implements Module<T, any> {
+ * type T = typeof state;
+ *
+ * class User implements Module<T, any> {
  *   namespaced = true;
  *   state = state;
- *   mutations: MutationTree<T> = {...StoreTools.generateMutations(state)};
- *   actions: ActionTree<T, any> = {...StoreTools.generateActions(state)};
- *   getters: GetterTree<T, any> = {...StoreTools.generateGetters(state)};
+ *   mutations: MutationTree<T> = { ...StoreTools.generateMutations(state) };
+ *   actions: ActionTree<T, any> = { ...StoreTools.generateActions(state) };
+ *   getters: GetterTree<T, any> = { ...StoreTools.generateGetters(state) };
  * }
-
- * export default new System();
+ *
+ * export type {UserMod} = T;
+ * export type {UserModKey} = types.KeyOfOnly<UserMod>;
+ * export const user = new User();
  * </pre>
  *
  * <p/>
  * <h1>2. 注册到vuex</h1>
  * <pre>
  * import { createStore } from 'vuex';
- * import system from '@/store/mod/system';
+ * import system from '@/store/mod/user';
  *
  * export default createStore({
  *   modules: {
- *     system,
+ *     user,
  *   },
  * });
  * </pre>
