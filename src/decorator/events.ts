@@ -2,6 +2,10 @@ import { createDecorator } from 'vue-class-component';
 import { Logs } from '../tools/Logs';
 import { Strings } from '../tools/Strings';
 import { Validation } from '../tools/Validation';
+import { fns } from '../types/fns';
+import { types } from '../types/types';
+import FalsyLike = types.FalsyLike;
+import { Functions } from '../tools/Functions';
 
 export class Events {
 
@@ -102,6 +106,45 @@ export class Events {
           Logs.debug(prefix, ' Returns: ', data);
 
         return data;
+      };
+
+    });
+  }
+
+  /**
+   * 延迟执行直到断言成功
+   * @param predicate 断言函数
+   * @param [lazy=10] 首次执行延迟时间(ms)
+   * @param [interval=10] 第N+1次断言间隔时间(ms)
+   */
+  static lazy<T>(
+    predicate: fns.Handler<T, boolean>,
+    lazy = 10,
+    interval?: number
+  ) {
+
+    lazy = (0 < lazy) ? lazy : 10;
+    interval = interval ?? lazy;
+    interval = (0 <= interval) ? interval : lazy;
+
+    return createDecorator((
+      options,
+      fnKey
+    ) => {
+
+      const fn = options.methods[fnKey];
+      options.methods[fnKey] = function (...args: any[]) {
+        const vm = this;
+        const fnWrapper = (): boolean => {
+          const result = !!Functions.call(predicate, vm);
+          result && fn.bind(vm)(...args);
+          return result;
+        };
+
+        setTimeout(() => {
+          fnWrapper();
+          const intervalId = setInterval(() => fnWrapper() && clearInterval(intervalId));
+        }, lazy);
       };
 
     });

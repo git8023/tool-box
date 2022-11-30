@@ -1,7 +1,7 @@
 {
   "name": "@hyong8023/tool-box",
-  "version": "1.0.18",
-  "description": "",
+  "version": "1.0.25",
+  "description": "1.0.x 开发版",
   "main": "dist/tool-box.cjs.js",
   "module": "dist/tool-box.esm.js",
   "types": "dist/types",

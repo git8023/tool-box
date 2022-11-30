@@ -44,7 +44,8 @@ export class Broadcast<C, K = keyof C> {
     ...args: any[]
   ): Broadcast<C, K> {
     this.get(channel).push(fn);
-    Functions.timer(fn, false, lazy, immediate, ...args);
+    if (immediate)
+      Functions.timer(fn, false, lazy, false, ...args);
     return this;
   }
 

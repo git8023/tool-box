@@ -62,7 +62,7 @@ export class Functions {
     }
 
     setTimeout(() => {
-      Promises.of(call).then(() => {
+      Promises.of(() => call(...args)).then(() => {
         loop && this.timer(call, loop, lazy);
       });
     }, lazy);
