@@ -3,6 +3,7 @@ import { fns } from '../types/fns';
 import { Cast } from './Cast';
 import { Logs } from './Logs';
 import { Validation } from './Validation';
+import { Functions } from './Functions';
 
 
 export class Promises {
@@ -19,20 +20,20 @@ export class Promises {
    * 包装数据或数据获取器
    * @param og 数据或数据获取器
    */
-  static of<T = void>(og: fns.OrGetter<T>) {
+  static of<R, T = void>(og: fns.OrAsyncGetter<T, R>): Promise<R> {
     if (Validation.isFunction(og))
       return new Promise((
         resolve,
         reject
       ) => {
         try {
-          const data = (og as fns.Getter<T>)();
-          resolve(data);
+          const data = Functions.call(og as fns.Getter<R>);
+          resolve(data!);
         } catch (e) {
           reject(e);
         }
       });
-    return this.from(og as T);
+    return this.from(og as R);
   }
 
   /**
