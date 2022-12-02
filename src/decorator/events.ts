@@ -7,6 +7,9 @@ import { types } from '../types/types';
 import FalsyLike = types.FalsyLike;
 import { Functions } from '../tools/Functions';
 
+/**
+ * 针对Vue函数
+ */
 export class Events {
 
   /**

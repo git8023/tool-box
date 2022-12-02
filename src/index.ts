@@ -1,6 +1,7 @@
 export { Get, Put, Post, Delete } from './decorator/http-request';
 export { DataPool, DataPoolKey } from './decorator/data-pool';
 export { Events } from './decorator/events';
+export { Observer } from './decorator/observer';
 
 export { Arrays } from './tools/Arrays';
 export { AsyncArrayStream } from './tools/AsyncArrayStream';
