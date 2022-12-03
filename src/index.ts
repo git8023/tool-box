@@ -21,6 +21,7 @@ export { Strings } from './tools/Strings';
 export { Validation } from './tools/Validation';
 export { StoreTools } from './tools/StoreTools';
 export { Broadcast } from './tools/Broadcast';
+export { Documents } from './tools/Documents';
 
 export { fns } from './types/fns';
 export { types } from './types/types';
