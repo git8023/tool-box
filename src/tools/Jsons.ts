@@ -71,7 +71,7 @@ export class Jsons {
 
   /**
    * 遍历对象属性
-   * @param o {object} 对象
+   * @param o 对象
    * @param handler 返回false停止后续, 否则直到结束
    */
   static foreach<T extends object, K extends keyof T, P extends T[K]>(
@@ -87,8 +87,8 @@ export class Jsons {
 
   /**
    * 把src浅克隆到dist中
-   * @param src {object} 数据对象
-   * @param dist {object} 目标对象
+   * @param src 数据对象
+   * @param dist 目标对象
    */
   static cover<T extends object>(
     src: any = {},

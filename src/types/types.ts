@@ -18,6 +18,7 @@ export namespace types {
   /**
    * 数据分组
    *
+   * @example
    * {[P in T]:T}
    */
   export type RecordS<T> = Record<KeyOf<T>, T>;
@@ -71,7 +72,9 @@ export namespace types {
   }
 }
 
-
+/**
+ * Vuex类型依赖
+ */
 export namespace vuex {
 
   export type ActionContext<S, R = any> = {

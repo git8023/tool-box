@@ -6,7 +6,7 @@ import { Functions } from './Functions';
 /**
  * 条件赋值逻辑
  */
-class Switcher<T, I> {
+export class Switcher<T, I> {
 
   private valueInner?: T;
 

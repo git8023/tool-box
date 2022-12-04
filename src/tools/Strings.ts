@@ -1,13 +1,13 @@
-import { Jsons } from '../tools/Jsons';
-import { Arrays } from '../tools/Arrays';
-import { Validation } from '../tools/Validation';
+import { Jsons } from './Jsons';
+import { Arrays } from './Arrays';
+import { Validation } from './Validation';
 
 export class Strings {
 
   /**
    * 字符串替换
-   * @param s {string} 字符串
-   * @param cfg {[s:string]:string} 属性名:正则表达式分组字符串, 属性值:要替换的值
+   * @param s 字符串
+   * @param cfg 属性名:正则表达式分组字符串, 属性值:要替换的值
    */
   static replaceAll(
     s = '',
@@ -23,9 +23,9 @@ export class Strings {
 
   /**
    * 校验是否包含空字符串
-   * @param [useTrim=true] {boolean}
-   * @param arr {string[]} 被检测字符串
-   * @return {boolean} 包含至少一个空字符串返回true, 否则返回false
+   * @param [useTrim=true] 是否去除两端空格
+   * @param arr  被检测字符串
+   * @return 包含至少一个空字符串返回true, 否则返回false
    */
   static hasBlank(
     useTrim = true,
@@ -43,9 +43,9 @@ export class Strings {
 
   /**
    * 空字符串校验
-   * @param s {string} 字符串
-   * @param [useTrim=true] {boolean} 是否去除两端空格
-   * @return {boolean} 空字符串返回true, 否则返回false
+   * @param s  字符串
+   * @param [useTrim=true]  是否去除两端空格
+   * @return 空字符串返回true, 否则返回false
    */
   static isBlank(
     s: string,
@@ -67,7 +67,7 @@ export class Strings {
 
   /**
    * 生成唯一ID
-   * @return {string} 唯一字符串
+   * @return 唯一字符串
    */
   static guid(): string {
     const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);

@@ -127,9 +127,9 @@ export class Arrays {
   /**
    * 查找元素(或递归满足条件的数组元素属性值)
    * @param arr 数组或元素(数组)属性值
-   * @param observer {Function} 值观察者. 成功true否则返回false.
-   * @param recursion {Function} 递归属性提取检视器. 没有递归属性返回null否则返回需要递归的数组属性值
-   * @returns {Nillable} 查询成功返回目标数据, 否则返回null
+   * @param observer 值观察者. 成功true否则返回false.
+   * @param recursion 递归属性提取检视器. 没有递归属性返回null否则返回需要递归的数组属性值
+   * @returns 查询成功返回目标数据, 否则返回null
    */
   static seek<T>(
     arr: Array<T>,

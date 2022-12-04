@@ -67,8 +67,8 @@ export class PropChains {
 
   /**
    * 获取数组对象的值
-   * @param data {Object} 数据对象
-   * @param ognl {String} ognl表达式
+   * @param data 数据对象
+   * @param ognl ognl表达式
    */
   static getArrOgnlVal(
     data: any,
@@ -115,8 +115,8 @@ export class PropChains {
 
   /**
    * 获取属性值
-   * @param data {Object} 数据对象
-   * @param ognl {String} ognl表达式
+   * @param data 数据对象
+   * @param ognl ognl表达式
    */
   static getValue<R>(
     data: any,

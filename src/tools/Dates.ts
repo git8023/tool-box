@@ -6,10 +6,10 @@ export class Dates {
 
   /**
    * 解析日期字符串或格式化为另一种日期规则字符串
-   * @param {string} dateStr 源日期字符串
-   * @param {string} inFmt 源日期字符串格式
-   * @param {string} [outFmt=undefined] 输出日期字符串格式
-   * @return {Date | string} 当指定outFmt时输出日期字符串, 否则返回日期对象
+   * @param dateStr 源日期字符串
+   * @param inFmt 源日期字符串格式
+   * @param [outFmt=undefined] 输出日期字符串格式
+   * @return 当指定outFmt时输出日期字符串, 否则返回日期对象
    */
   static datePoF(
     dateStr: string,
@@ -26,8 +26,8 @@ export class Dates {
 
   /**
    * 解析日期字符串
-   * @param {string} dateStr 源日期字符串
-   * @param {string} pattern 解析规则(yMDHmsS)
+   * @param dateStr 源日期字符串
+   * @param pattern 解析规则(yMDHmsS)
    * @return {Date | null} 解析成功返回日期对象, 否则返回null
    */
   static dateParse(
@@ -37,11 +37,6 @@ export class Dates {
     const metaPatterns = {
       /**
        * 元规则决策表, 每项决策中会新增三个属性:
-       * <p>
-       * beginIndex: {Number}<br>
-       * pLength: {Number}<br>
-       * original: {String}
-       * </p>
        */
       metas: {
         /** 年规则 */
@@ -113,9 +108,9 @@ export class Dates {
 
       /**
        * 校验器
-       * @param originDateStr {String} 日期字符串
-       * @param tgtPattern {String} 解析规则
-       * @returns {Boolean} true-解析成功, false-规则不能匹配日期字符串
+       * @param originDateStr 日期字符串
+       * @param tgtPattern 解析规则
+       * @returns true-解析成功, false-规则不能匹配日期字符串
        */
       validate: function (
         originDateStr: string,
@@ -175,9 +170,9 @@ export class Dates {
 
   /**
    * 日期格式化
-   * @param {Date | number} date 日期对象或毫秒值
-   * @param [format] {string} 格式化规则, 默认: yyyy-MM-dd HH:mm:ss
-   * @return {string | undefined} 成功返回日期字符串, 否则返回undefined
+   * @param date 日期对象或毫秒值
+   * @param [format="yyyy-MM-dd HH:mm:ss"] 格式化规则, 默认: yyyy-MM-dd HH:mm:ss
+   * @return成功返回日期字符串, 否则返回undefined
    */
   static dateFmt(
     date: Date | number | string,

@@ -3,23 +3,28 @@ export namespace vmsNet {
   /**
    * GET 请求参数
    *
-   * @param P Parameter
+   * @param P Parameter, 请求参数
    *
-   * @param PV Path Variable
+   * @param PV PathVariable, 路径参数常用于RESTFul实现
    *
    * @function
    */
   export interface Parameters<P = void, PV = void> {
     /**
      * 路径变量
-     * - /api/{id} => {id:1}
-     * - /api/{companyId}/{organizeId} => {company:1, organizeId:2}
+     * @example
+     *
+     * class NetApi {
+     *   @Put('/api/{id}/{status}')
+     *   static readonly get:vmsNet.Parameters<any, {id:string, status:'ENABLE'|'DISABLE'}}>;
+     * }
+     *
+     * NetApi.get({pathVariables: {id:1, status:'DISABLE'}})
      */
     pathVariables?: PV;
 
     /**
      * 常规参数
-     * - 数据追加到 {params}
      * @see AxiosRequestConfig.params
      */
     params?: P;
@@ -28,11 +33,11 @@ export namespace vmsNet {
   /**
    * GET 请求函数定义
    *
-   * @param R Return
+   * @param R Return,返回值类型
    *
-   * @param P Parameter
+   * @param P Parameter, 请求参数
    *
-   * @param PV Path Variable
+   * @param PV PathVariable, 路径参数常用于RESTFul实现
    *
    * @function
    */
@@ -43,16 +48,15 @@ export namespace vmsNet {
   /**
    * POST 请求函数定义
    *
-   * @param R Return
+   * @param R Return,返回值类型
    *
-   * @param P Parameter
+   * @param P Parameter, 请求参数
    *
-   * @param PV Path Variable
+   * @param PV PathVariable, 路径参数常用于RESTFul实现
    *
    * @function
    */
-  export interface PostMapping<R = void, P = void, PV = void> {
-    (args?: Parameters<P, PV>): Promise<R>
+  export interface PostMapping<R = void, P = void, PV = void> extends GetMapping<R, P, PV> {
   }
 
 }

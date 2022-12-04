@@ -8,7 +8,8 @@
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs",
     "pub": "npm publish --access public --registry https://registry.npmjs.org",
-    "test": "jest"
+    "test": "jest",
+    "doc": "npx typedoc --out doc"
   },
   "repository": {
     "type": "git",
@@ -44,6 +45,7 @@
     "sass": "^1.56.1",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
+    "typedoc": "^0.23.21",
     "typescript": "^4.8.4",
     "vue": "^3.2.45",
     "vue-class-component": "^7.2.6",

@@ -7,71 +7,83 @@ import { Cast } from './Cast';
 import { Promises } from './Promises';
 
 /**
- * 错误事件数据
+ * 异步数组相关类型定义
  */
-type ErrorEventData<T, R> = { self: AsyncArrayStream<T, R>, error: Error };
-
-/**
- * 元素事件数据
- */
-type ElementEventData<T, R> = {
+export namespace asi {
 
   /**
-   * 数据项
+   * 错误事件数据
    */
-  item: T;
+  export type ErrorEventData<T, R> = { self: AsyncArrayStream<T, R>, error: Error };
 
   /**
-   * 数据索引
+   * 元素事件数据
    */
-  index: number;
+  export  type ElementEventData<T, R> = {
+
+    /**
+     * 数据项
+     */
+    item: T;
+
+    /**
+     * 数据索引
+     */
+    index: number;
+
+    /**
+     * 当前对象
+     */
+    self: AsyncArrayStream<T, R>;
+
+    /**
+     * 中断后续
+     * @param data 中断信息
+     */
+    broken(data: any): void;
+  }
 
   /**
-   * 当前对象
+   * 处理结果数据
    */
-  self: AsyncArrayStream<T, R>;
+  export   type ResultEventData<T> = { result: T, broken?: any };
 
   /**
-   * 中断后续
-   * @param data 中断信息
+   * 可用事件
    */
-  broken(data: any): void;
+  export  type Event<T, R> = {
+    /**
+     * 开始执行前调用
+     */
+    begin?: fns.Handler<AsyncArrayStream<T, R>, types.FalsyLike>,
+
+    /**
+     * 元素节点处理
+     */
+    element?: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>,
+
+    /**
+     * 目标数组为空时执行.
+     *
+     * 如果有返回数据，此数据将替换原来的数组
+     */
+    empty?: fns.Handler<AsyncArrayStream<T, R>, fns.OrAsyncGetter<void, T[] | void>>,
+
+    /**
+     * 处理完成
+     */
+    done?: fns.Handler<AsyncArrayStream<T, R>, R>,
+
+    /**
+     * 出现错误时
+     */
+    error?: fns.Handler<ErrorEventData<T, R>, R>,
+  }
 }
 
 /**
- * 处理结果数据
+ * 数组异步迭代器
  */
-type ResultEventData<T> = { result: T, broken?: any };
-
-type Event<T, R> = {
-  /**
-   * 开始执行前调用
-   */
-  begin?: fns.Handler<AsyncArrayStream<T, R>, types.FalsyLike>,
-
-  /**
-   * 元素节点处理
-   */
-  element?: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>,
-
-  /**
-   * 目标数组为空时执行.
-   *
-   * 如果有返回数据，此数据将替换原来的数组
-   */
-  empty?: fns.Handler<AsyncArrayStream<T, R>, fns.OrAsyncGetter<void, T[] | void>>,
-
-  /**
-   * 处理完成
-   */
-  done?: fns.Handler<AsyncArrayStream<T, R>, R>,
-
-  /**
-   * 出现错误时
-   */
-  error?: fns.Handler<ErrorEventData<T, R>, R>,
-}
-
 export class AsyncArrayStream<T, R = any> {
 
   /**
@@ -84,7 +96,7 @@ export class AsyncArrayStream<T, R = any> {
    * 事件
    * @private
    */
-  private events: Event<T, R> = {};
+  private events: asi.Event<T, R> = {};
 
   /**
    * 目标数据异步获取器
@@ -120,7 +132,7 @@ export class AsyncArrayStream<T, R = any> {
    * 结果委托
    * @private
    */
-  private delegateResult?: fns.Consume<ResultEventData<R>>;
+  private delegateResult?: fns.Consume<asi.ResultEventData<R>>;
 
   /**
    * 等待处理结果的Promise
@@ -157,7 +169,7 @@ export class AsyncArrayStream<T, R = any> {
    * 监听节点事件
    * @param handler 事件处理器
    */
-  onElement(handler: fns.Handler<ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>): AsyncArrayStream<T, R> {
+  onElement(handler: fns.Handler<asi.ElementEventData<T, R>, fns.OrAsyncGetter<void, types.FalsyLike>>): AsyncArrayStream<T, R> {
     this.events.element = handler;
     return this;
   }
@@ -214,7 +226,12 @@ export class AsyncArrayStream<T, R = any> {
 
       // 遍历每个元素
       const item = elements[this.cursor];
-      const itemData: ElementEventData<T, R> = { index: this.cursor++, item, self: this, broken: this.broken.bind(this) };
+      const itemData: asi.ElementEventData<T, R> = {
+        index: this.cursor++,
+        item,
+        self: this,
+        broken: this.broken.bind(this)
+      };
       const itemHandleResult = Functions.call(this.events.element, itemData);
       return Functions
         .execOrAsyncGetter(itemHandleResult)
@@ -234,7 +251,7 @@ export class AsyncArrayStream<T, R = any> {
   /**
    * 获取最终处理结果, 如果结果中包含 broken 表示处理被中断
    */
-  getResult(): Promise<ResultEventData<R>> {
+  getResult(): Promise<asi.ResultEventData<R>> {
     return new Promise((resolve) => this.delegateResult = resolve);
   }
 

@@ -15,7 +15,7 @@ export class Cast {
   }
 
   /**
-   * {} as any
+   * Object() as any
    */
   static get anyO() {
     return this.as() as any;
@@ -23,7 +23,7 @@ export class Cast {
 
   /**
    * 指定对象转换为目标类型
-   * @param [o={}] 对象
+   * @param [o=Object()] 对象
    * @return 目标类型
    */
   static as<T>(o: any = {}): T {

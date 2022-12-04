@@ -1,8 +1,9 @@
 import { vuex } from '../types/types';
 
 /**
- * <h1>1. 定义模块</h1>
- * <pre>
+ * @example
+ * // @file: store/mod/user.ts
+ * // 定义通用状态类
  * import {
  *   ActionTree, GetterTree, Module, MutationTree,
  * } from 'vuex';
@@ -25,14 +26,13 @@ import { vuex } from '../types/types';
  *   getters: GetterTree<T, any> = { ...StoreTools.generateGetters(state) };
  * }
  *
- * export type {UserMod} = T;
- * export type {UserModKey} = types.KeyOfOnly<UserMod>;
+ * export type User = T;
+ * export type UserModKey = types.KeyOfOnly<UserMod>;
  * export const user = new User();
- * </pre>
  *
- * <p/>
- * <h1>2. 注册到vuex</h1>
- * <pre>
+ *
+ * // @file: store/index.ts
+ * // 注册到vuex
  * import { createStore } from 'vuex';
  * import system from '@/store/mod/user';
  *
@@ -41,7 +41,6 @@ import { vuex } from '../types/types';
  *     user,
  *   },
  * });
- * </pre>
  */
 export class StoreTools {
 
