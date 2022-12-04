@@ -146,7 +146,7 @@ export class Events {
 
         setTimeout(() => {
           fnWrapper();
-          const intervalId = setInterval(() => fnWrapper() && clearInterval(intervalId));
+          const intervalId = setInterval(() => fnWrapper() && clearInterval(intervalId), interval);
         }, lazy);
       };
 

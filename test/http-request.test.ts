@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Logs } from '../src';
+import { Logs } from '../src/tools/Logs';
 import { DataPool } from '../src/decorator/data-pool';
 import { Delete, Get, Post, Put } from '../src/decorator/http-request';
 import { vmsNet } from '../src/types/vms-net';

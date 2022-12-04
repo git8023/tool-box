@@ -1,6 +1,6 @@
 {
   "name": "@hyong8023/tool-box",
-  "version": "1.0.28",
+  "version": "1.0.30",
   "description": "1.0.x 开发版",
   "main": "dist/tool-box.cjs.js",
   "module": "dist/tool-box.esm.js",
@@ -9,7 +9,8 @@
     "build": "rollup -c --bundleConfigAsCjs",
     "pub": "npm publish --access public --registry https://registry.npmjs.org",
     "test": "jest",
-    "doc": "npx typedoc --out doc"
+    "doc": "npx typedoc --out doc",
+    "pkg": "yarn build & yarn doc"
   },
   "repository": {
     "type": "git",

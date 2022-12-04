@@ -41,5 +41,6 @@ module.exports = {
     '@typescript-eslint/no-misused-new': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
+    'no-debugger': 'off',
   }
 };

@@ -1,7 +1,7 @@
 import { fns } from '../types/fns';
 import { types } from '../types/types';
 import { Functions } from './Functions';
-import { Errors } from './Errors';
+import { BError } from './BError';
 import { Validation } from './Validation';
 import { Cast } from './Cast';
 import { Promises } from './Promises';
@@ -298,7 +298,7 @@ export class AsyncArrayStream<T, R = any> {
    * @private
    */
   private catch(error: any) {
-    const args = { self: this, error: Errors.from(error) };
+    const args = { self: this, error: BError.from(error) };
     this.result = Functions.call(this.events.error, args);
     this.broken(error);
     this.callDelegateResult();

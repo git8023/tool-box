@@ -70,6 +70,22 @@ export namespace types {
      */
     abort(): void;
   }
+
+  export type DecoratorClassParameter<T = any> = {
+    target: T
+  }
+
+  /**
+   * 函数装饰器参数
+   */
+  export type DecoratorMethodParameter<T = any> = {
+    target: T,
+    fnKey: string
+  }
+
+  export type DecoratorPropParameter<T = any> = DecoratorMethodParameter<T> & {
+    desc: PropertyDescriptor
+  }
 }
 
 /**

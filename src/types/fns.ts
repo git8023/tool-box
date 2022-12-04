@@ -17,6 +17,20 @@ export namespace fns {
   }
 
   /**
+   * 数据处理器, 任意多个参数
+   *
+   * @param C 执行上下文
+   *
+   * @param R 返回值
+   */
+  export interface HandlerPs<R = void, C = void> extends Handler<any, R> {
+    (
+      c?: C,
+      ...args: any[]
+    ): R
+  }
+
+  /**
    * 数据消费处理器
    */
   export type Consume<T> = Handler<T, void>;
@@ -95,4 +109,5 @@ export namespace fns {
    * 数组键映射器
    */
   export type ArrayKeyMapper<T, R = string> = types.KeyOf<T> | ArrayKeyMapperHandler<T, R>;
+
 }

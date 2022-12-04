@@ -8,7 +8,7 @@ export { AsyncArrayStream, asi } from './tools/AsyncArrayStream';
 export { Builders } from './tools/Builders';
 export { Cast } from './tools/Cast';
 export { Dates } from './tools/Dates';
-export { Errors } from './tools/Errors';
+export { BError } from './tools/BError';
 export { Functions } from './tools/Functions';
 export { Jsons } from './tools/Jsons';
 export { Logics, Switcher } from './tools/Logics';
