@@ -6,6 +6,8 @@ import { fns } from '../types/fns';
 import { types } from '../types/types';
 import FalsyLike = types.FalsyLike;
 import { Functions } from '../tools/Functions';
+import { Jsons } from '../tools/Jsons';
+import Func = jest.Func;
 
 /**
  * 针对Vue函数
@@ -153,4 +155,88 @@ export class Events {
     });
   }
 
+  /**
+   * 观察者
+   * @param observe 观察逻辑
+   * @param [beforeBroken=true] 当state==='before'时observe返回false是否允许中断目标函数执行
+   * @param [useResult=false] 是否使用观察结果
+   */
+  static observe<R = any>(
+    observe: fns.Handler<{ stage: 'before' | 'after' | 'error', args?: any[], data?: R, error?: any }, boolean | void>,
+    beforeBroken = true,
+    useResult = false,
+  ) {
+    return createDecorator((
+      options,
+      key
+    ) => {
+
+      const fn = options.methods[key];
+      options.methods[key] = function (...args: any[]) {
+        observe = observe.bind(this);
+
+        const obsBR = observe({ stage: 'before', args: args });
+        if (beforeBroken && obsBR === false)
+          return;
+
+        try {
+          const data = fn.bind(this)(...args);
+
+          if (Validation.is(data, 'Promise')) {
+            return data
+              .then((data$: any) => {
+                const obsAR = observe({ stage: 'after', data: data$ });
+                return useResult ? obsAR : data$;
+              })
+              .catch((e: any) => {
+                observe({ stage: 'error', error: e });
+                return Promise.reject(e);
+              });
+          }
+
+          const obsAR = observe({ stage: 'after', data });
+          return useResult ? obsAR : data;
+        } catch (e) {
+          return observe({ stage: 'after', error: e });
+        }
+
+      };
+
+    });
+  }
+
+  /**
+   * 观察者
+   * @param points 切入点配置项
+   * @see observe
+   */
+  static observeRun<T = any>(
+    points: {
+      before?: keyof T,
+      after?: keyof T,
+      catcher?: keyof T,
+      final?: keyof T,
+    }
+  ) {
+    return this.observe(function ({ stage }) {
+      // @ts-ignore
+      const ctx: T = this;
+      let data: any;
+      const hasErr = false;
+      switch (stage) {
+        case 'before':
+          return Functions.call(Jsons.get(ctx, points.before!) as any);
+        case 'after':
+          Functions.call(Jsons.get(ctx, points.after!) as any);
+          return ;
+        case 'error':
+          data = Functions.call(Jsons.get(ctx, points.catcher!) as any);
+          Functions.call(Jsons.get(ctx, points.final!) as any);
+          break;
+        default:
+          Logs.warn(`[Events] 未处理状态: ${stage}`);
+          return;
+      }
+    }, false, false);
+  }
 }
