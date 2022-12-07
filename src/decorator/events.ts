@@ -8,6 +8,7 @@ import FalsyLike = types.FalsyLike;
 import { Functions } from '../tools/Functions';
 import { Jsons } from '../tools/Jsons';
 import Func = jest.Func;
+import { Promises } from '../tools/Promises';
 
 /**
  * 针对Vue函数
@@ -228,7 +229,7 @@ export class Events {
           return Functions.call(Jsons.get(ctx, points.before!) as any);
         case 'after':
           Functions.call(Jsons.get(ctx, points.after!) as any);
-          return ;
+          return;
         case 'error':
           data = Functions.call(Jsons.get(ctx, points.catcher!) as any);
           Functions.call(Jsons.get(ctx, points.final!) as any);
@@ -238,5 +239,30 @@ export class Events {
           return;
       }
     }, false, false);
+  }
+
+  /**
+   * 闪烁指定属性. 执行前熄灭执行后亮起.
+   * @param blinkProp 闪烁属性
+   * @param [duration=10] 熄灭持续时长(ms)
+   */
+  static blink<T, P extends keyof T = keyof T>(
+    blinkProp: P,
+    duration = 10
+  ) {
+    return createDecorator((
+      options,
+      key
+    ) => {
+
+      const fn = options.methods[key];
+      options.methods[key] = function (...args: any[]) {
+        this[blinkProp] = false;
+        Promises
+          .of(() => fn.bind(this)(...args))
+          .then(() => Functions.timer(() => this[blinkProp] = true, false, duration));
+      };
+
+    });
   }
 }
