@@ -4,6 +4,7 @@ import { Arrays } from './Arrays';
 import { Cast } from './Cast';
 import { fns } from '../types/fns';
 import { PropChains } from './PropChains';
+import { types } from '../types/types';
 
 export class Jsons {
 
@@ -221,5 +222,23 @@ export class Jsons {
     propChain: (keyof T) | string
   ): R {
     return PropChains.getValue(o, String(propChain));
+  }
+
+  /**
+   * 对象属性平铺
+   * @param src 目标对象
+   * @param convert 转换函数
+   * @return 转换结果
+   */
+  static flat<T extends object, R, P extends keyof T, V extends T[P]>(
+    src: T,
+    convert: fns.ObjectIteratorHandler<V, R>
+  ): R[] {
+    const results: R[] = [];
+    this.foreach(src, iter => {
+      const result = convert(Cast.as(iter));
+      results.push(result);
+    });
+    return results;
   }
 }
