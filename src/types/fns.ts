@@ -31,6 +31,23 @@ export namespace fns {
   }
 
   /**
+   * 多参数，无执行上下文，有返回值
+   */
+  export interface HandlerPs2<R = void, T1 = void, T2 = void, T3 = void, T4 = void, T5 = void, T6 = void, T7 = void, T8 = void, T9 = void> {
+    (
+      p1?: T1,
+      p2?: T2,
+      p3?: T3,
+      p4?: T4,
+      p5?: T5,
+      p6?: T6,
+      p7?: T7,
+      p8?: T8,
+      p9?: T9,
+    ): R;
+  }
+
+  /**
    * 数据消费处理器
    */
   export type Consume<T> = Handler<T, void>;

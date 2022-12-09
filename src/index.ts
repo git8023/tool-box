@@ -11,7 +11,7 @@ export { Dates } from './tools/Dates';
 export { BError } from './tools/BError';
 export { Functions } from './tools/Functions';
 export { Jsons } from './tools/Jsons';
-export { Logics, Switcher } from './tools/Logics';
+export { Logics, Switcher, Condition } from './tools/Logics';
 export { Logs, ILogger, ConsoleLogger, LogLevel } from './tools/Logs';
 export { Objects } from './tools/Objects';
 export { Promises } from './tools/Promises';

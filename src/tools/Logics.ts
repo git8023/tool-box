@@ -111,6 +111,146 @@ export class Switcher<T, I> {
   }
 }
 
+/**
+ * 条件记录器
+ */
+export class Condition<ND, PD> {
+
+  private negativeDesc!: ND;
+  private positiveDesc!: PD;
+
+  constructor(private c = true) {
+  }
+
+  //<editor-fold desc="and">
+  // @formatter:off
+  and(c:boolean, positiveDesc:PD, negativeDesc:ND):Condition<ND, PD>;
+  and(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean):Condition<ND, PD>;
+  and(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CHAIN'):Condition<ND, PD>;
+  and(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'PARAMETER'):boolean;
+  and(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CONDITION'):boolean;
+  // @formatter:on
+  //</editor-fold>
+
+  /**
+   * 逻辑与
+   * @param c 参考条件
+   * @param positiveDesc 正面描述数据
+   * @param negativeDesc 负面描述数据
+   * @param effect 运算结果是否影响当前条件
+   * @param returns 返回值类型
+   */
+  and(
+    c: boolean,
+    positiveDesc: PD,
+    negativeDesc: ND,
+    effect = true,
+    returns: 'PARAMETER' | 'CONDITION' | 'CHAIN' = 'CHAIN'
+  ): boolean | Condition<ND, PD> {
+    return this.exec(this.c && c, positiveDesc, negativeDesc, effect, returns, c);
+  }
+
+  //<editor-fold desc="or">
+  // @formatter:off
+  or(c:boolean, positiveDesc:PD, negativeDesc:ND):Condition<ND, PD>;
+  or(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean):Condition<ND, PD>;
+  or(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CHAIN'):Condition<ND, PD>;
+  or(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'PARAMETER'):boolean;
+  or(c:boolean, positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CONDITION'):boolean;
+  // @formatter:on
+  //</editor-fold>
+
+  /**
+   * 逻辑或
+   * @param c 参考条件
+   * @param positiveDesc 正面描述数据
+   * @param negativeDesc 负面描述数据
+   * @param effect 运算结果是否影响当前条件
+   * @param returns 返回值类型
+   */
+  or(
+    c: boolean,
+    positiveDesc: PD,
+    negativeDesc: ND,
+    effect = true,
+    returns: 'PARAMETER' | 'CONDITION' | 'CHAIN' = 'CHAIN'
+  ): boolean | Condition<ND, PD> {
+    return this.exec(this.c || c, positiveDesc, negativeDesc, effect, returns, c);
+  }
+
+  //<editor-fold desc="not">
+  // @formatter:off
+  not(positiveDesc:PD, negativeDesc:ND):Condition<ND, PD>;
+  not(positiveDesc:PD, negativeDesc:ND, effect:boolean):Condition<ND, PD>;
+  not(positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CHAIN'):Condition<ND, PD>;
+  not(positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'PARAMETER'):boolean;
+  not(positiveDesc:PD, negativeDesc:ND, effect:boolean, returns:'CONDITION'):boolean;
+  // @formatter:on
+  //</editor-fold>
+
+  /**
+   * 逻辑非
+   * @param value 值
+   * @param effect 运算结果是否影响当前条件
+   * @param returns 返回值类型
+   */
+  not(
+    positiveDesc: PD,
+    negativeDesc: ND,
+    effect = true,
+    returns: 'PARAMETER' | 'CONDITION' | 'CHAIN' = 'CHAIN'
+  ): boolean | Condition<ND, PD> {
+    return this.exec(!this.c, positiveDesc, negativeDesc, effect, returns);
+  }
+
+  /**
+   * 处理运算结果
+   * @param handler 处理器
+   * @return 处理器执行结果
+   */
+  result<R>(handler: fns.HandlerPs2<R, boolean, PD, ND>): R {
+    return Functions.call(handler, this.c, this.positiveDesc, this.negativeDesc)!;
+  }
+
+  /**
+   * 执行处理
+   * @param rc 参考条件
+   * @param value 值
+   * @param effect 运算结果是否影响当前条件
+   * @param returns 返回值类型
+   * @param [paramCondition] 参数中的条件, 未指定时返回当前条件
+   * @private
+   */
+  private exec(
+    rc: boolean,
+    positiveDesc: PD,
+    negativeDesc: ND,
+    effect: boolean,
+    returns: 'PARAMETER' | 'CONDITION' | 'CHAIN',
+    paramCondition?: boolean
+  ) {
+    if (rc) {
+      this.positiveDesc = positiveDesc;
+    } else {
+      this.negativeDesc = negativeDesc;
+    }
+
+    this.c = effect ? rc : this.c;
+
+    switch (returns) {
+      case 'PARAMETER':
+        return paramCondition ?? this.c;
+      case 'CONDITION':
+        return this.c;
+      case 'CHAIN':
+        return this;
+      default:
+        return this;
+    }
+  }
+
+}
+
 export class Logics {
 
   /**
@@ -125,4 +265,13 @@ export class Logics {
   ): Switcher<R, T> {
     return new Switcher<R, T>(condition, value);
   }
+
+  /**
+   * 条件记录器
+   * @param [c=true] 默认条件
+   */
+  static condition<PD = string, ND = string>(c = true): Condition<PD, ND> {
+    return new Condition<PD, ND>(c);
+  }
 }
+
