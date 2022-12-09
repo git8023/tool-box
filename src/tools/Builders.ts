@@ -11,11 +11,16 @@ export class Builders {
 
   /**
    * 构建返回参数值的函数
-   * @param returnValue 返回值
-   * @return () => returnValue
+   * @example
+   *
+   * Builders.getterSelf(1);  // () => 1
+   * Builders.getterSelf();   // (param) => param
+   *
+   * @param [returnValue] 返回值, 默认返回第一个参数
+   * @return returnValue ?? param
    */
-  static getterSelf<T, R = any>(returnValue: R): T {
-    return (() => returnValue) as T;
+  static getterSelf<T, R = any>(returnValue?: R): T {
+    return ((param:any) => returnValue ?? param) as T;
   }
 
   /**

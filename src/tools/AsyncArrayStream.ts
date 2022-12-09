@@ -5,6 +5,7 @@ import { BError } from './BError';
 import { Validation } from './Validation';
 import { Cast } from './Cast';
 import { Promises } from './Promises';
+import { Logs } from './Logs';
 
 /**
  * 异步数组相关类型定义
@@ -46,12 +47,12 @@ export namespace asi {
   /**
    * 处理结果数据
    */
-  export   type ResultEventData<T> = { result: T, broken?: any };
+  export type ResultEventData<T> = { result: T, broken?: any, brokenType?: asi.BrokenType };
 
   /**
    * 可用事件
    */
-  export  type Event<T, R> = {
+  export type Event<T, R> = {
     /**
      * 开始执行前调用
      */
@@ -79,6 +80,8 @@ export namespace asi {
      */
     error?: fns.Handler<ErrorEventData<T, R>, R>,
   }
+
+  export type BrokenType = 'MANUAL' | 'ELEMENT_ITERATOR_HANDLE:FALSE'
 }
 
 /**
@@ -127,6 +130,12 @@ export class AsyncArrayStream<T, R = any> {
    * @private
    */
   private brokenInfo?: any;
+
+  /**
+   * 中断类型
+   * @private
+   */
+  private brokenType?: asi.BrokenType;
 
   /**
    * 结果委托
@@ -235,17 +244,29 @@ export class AsyncArrayStream<T, R = any> {
       const itemHandleResult = Functions.call(this.events.element, itemData);
       return Functions
         .execOrAsyncGetter(itemHandleResult)
-        .then(() => this.next());
+        .then((itemResult) => {
+          if (!itemResult) {
+            Logs.debug(`元素迭代返回结果:[${itemResult}], 是否终止后续处理:[${!itemResult}]`, itemData);
+            this.broken({ ...itemData, self: undefined }, 'ELEMENT_ITERATOR_HANDLE:FALSE');
+            return;
+          }
+          return this.next();
+        });
     });
   }
 
   /**
    * 手动中断
    * @param brokenData 终端携带的数据
+   * @param [type='MANUAL'] 中断类型
    */
-  broken(brokenData: any) {
+  broken(
+    brokenData?: any,
+    type: asi.BrokenType = 'MANUAL'
+  ) {
     this.isOver = true;
     this.brokenInfo = brokenData;
+    this.brokenType = type;
   }
 
   /**
@@ -309,7 +330,8 @@ export class AsyncArrayStream<T, R = any> {
    * @private
    */
   private callDelegateResult() {
-    Functions.call(this.delegateResult, { result: this.result!, broken: this.brokenInfo });
+    const result: asi.ResultEventData<R> = { result: this.result!, broken: this.brokenInfo, brokenType: this.brokenType };
+    Functions.call(this.delegateResult, result);
     this.delegateResult = undefined;
   }
 }

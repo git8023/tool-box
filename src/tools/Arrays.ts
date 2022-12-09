@@ -6,7 +6,6 @@ import { Jsons } from './Jsons';
 import { Functions } from './Functions';
 import { Builders } from './Builders';
 import { Logics } from './Logics';
-import { Docs } from '../decorator/docs';
 
 export class Arrays {
 

@@ -1,4 +1,8 @@
 import { types } from '../types/types';
+import { fns } from '../types/fns';
+import { Jsons } from './Jsons';
+import { AsyncArrayStream } from './AsyncArrayStream';
+import { Cast } from './Cast';
 
 export class Validation {
 
@@ -170,4 +174,68 @@ export class Validation {
   static isFunction(o: any): boolean {
     return this.is(o, 'Function');
   }
+
+  /**
+   * 校验对象属性值是否有效
+   * @param o 目标对象
+   * @param validator 验证器
+   * @return 成功返回true，失败返回false
+   */
+  static validate<T>(
+    o: T,
+    validator: types.RecordSTP<T, fns.ObjectIteratorHandler<T[keyof T]>>,
+  ): boolean;
+
+  /**
+   * 校验对象属性值是否有效
+   * @param o 目标对象
+   * @param validator 验证器
+   * @param async 异步校验
+   * @return 成功返回true，失败返回false
+   */
+  static validate<T>(
+    o: T,
+    validator: types.RecordSTP<T, fns.ObjectIteratorHandler<T[keyof T], Promise<types.FalsyLike>>>,
+    async: true
+  ): Promise<boolean>;
+
+  /**
+   * 校验对象属性值是否有效
+   * @param o 目标对象
+   * @param validator 校验器
+   * @param [async=false] 同步验证指定为true，否则指定为false
+   * @return 成功返回true，失败返回false
+   */
+  static validate<T extends object>(
+    o: T,
+    validator: types.RecordSTP<T, fns.ObjectIteratorHandler<T[keyof T], types.FalsyLike | Promise<types.FalsyLike>>>,
+    async = false
+  ): boolean | Promise<boolean> {
+
+    const validators = Jsons.flat(validator, iter => ({
+      index: iter.index,
+      validate: iter.item,
+      iter: {
+        item: Jsons.get(o, iter.index),
+        index: iter.index
+      } as types.IteratorItem<T[keyof T], string>
+    }));
+
+    if (!async) {
+      return validators.reduce(
+        (
+          pv,
+          el
+        ) => pv && false !== el.validate!(el.iter),
+        true
+      );
+    }
+
+    return AsyncArrayStream
+      .from(validators)
+      .onElement((evt) => evt.item.validate!(Cast.as(evt.item.iter)))
+      .getResult()
+      .then((result) => Validation.isEmpty(result.broken) || Validation.isEmpty(result.brokenType));
+  }
 }
+

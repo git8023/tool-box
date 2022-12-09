@@ -30,6 +30,10 @@ export class Docs {
     (name?: string) =>
       Decorators.class(({ target }) => this.setC(name ?? (target as Function).name, target));
 
+  /**
+   * 函数注解
+   * @param [name] 函数(别)名
+   */
   static readonly m =
     (name?: string) =>
       Decorators.method(({ target, fnKey }) => this.setF(target, fnKey, name));

@@ -19,9 +19,22 @@ export namespace types {
    * 数据分组
    *
    * @example
-   * {[P in T]:T}
+   * {[P in types.KeyType | keyof T]:T}
    */
   export type RecordS<T> = Record<KeyOf<T>, T>;
+
+  /**
+   * 数据分组
+   * @example
+   *
+   * type ObjectValidator = types.RecordST<T, fns.ObjectIteratorHandler<T>>
+   */
+  export type RecordST<T, V> = Record<keyof T, V>;
+
+  /**
+   * 可选的数据分组
+   */
+  export type RecordSTP<T, V> = Partial<types.RecordST<T, V>>;
 
   /**
    * 可用于对象属性类型

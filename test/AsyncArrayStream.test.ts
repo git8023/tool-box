@@ -12,6 +12,7 @@ describe('AsyncArrayStream', () => {
       })
       .onElement(data => {
         console.log('onElement', data);
+        return false;
       })
       .onEmpty(data => {
         console.log('onEmpty', data);
