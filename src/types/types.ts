@@ -125,7 +125,7 @@ export namespace vuex {
     payload?: any
   ) => void>
 
-  export type GetterTree<S, R> = types.RecordS<(
+  export type GetterTree<S, R = any> = types.RecordS<(
     state: S,
     getters: any,
     rootState: R,

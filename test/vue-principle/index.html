@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+
+  class Vue {
+    constructor(options) {
+      this.$options = options;
+      this.$data = options.data;
+      this.observe(this.$data);
+    }
+
+    // 响应式监听
+    observe(data) {
+
+      // 监听data中的每个属性
+      Object.keys(data).forEach((key) => {
+        this.defineReactive(data, key, data[key]);
+      });
+    }
+
+    // 定义响应式行为
+    // 劫持数据 getter/setter
+    defineReactive(
+      data,
+      key,
+      value/*作为局部变量重复使用, 保存 data[key] 当前值*/
+    ) {
+      Object.defineProperty(data, key, {
+        get() {
+          return value;
+        },
+        set(newValue) {
+          value = newValue;
+          console.log(`数据更新: ${value} -> ${newValue}`)
+        }
+      })
+    }
+  }
+
+  let vue = new Vue({
+    template: `
+      <div>
+      <span>{{ name1 }}</span>
+      <span>{{ name2 }}</span>
+      <span>{{ name1 }}</span>
+      </div>`,
+    data: {
+      name1: '',
+      name2: 'text2',
+      name3: ''
+    },
+    created() {
+      this.name1 = 1
+    }
+  });
+
+  console.log(vue)
+  vue.$data.text = '1'
+
+</script>
+
+</body>
+</html>

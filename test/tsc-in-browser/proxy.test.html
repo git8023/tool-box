@@ -1,0 +1,29 @@
+<script lang="ts">
+
+  let o: { x: number, b?: number, [s: string]: any } = { x: 1 };
+  const po = new Proxy<>(o, {
+    set(
+      target: { x: number },
+      p: string | symbol,
+      newValue: any,
+      receiver: any
+    ): boolean {
+      if (p in target) {
+        target[p] = newValue;
+        return true;
+      }
+
+      console.log(`新的属性被设置: ${p}`);
+      target[p] = newValue;
+      return true;
+    }
+  });
+
+  po.x = 1;
+  console.log(po.x, o.x);
+  po.b = 2;
+  console.log(po.b, o.b);
+  po.c = 3;
+  console.log(po.c, o.c);
+
+</script>

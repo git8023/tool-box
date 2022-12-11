@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <button id="compileBtn">Compile</button>
+    <button id="runBtn">Run</button>
+</div>
+<div style="display:flex; flex-direction:row; min-height:20rem;">
+    <textarea id="codeTxt" style="flex:1;">
+function testDecorator(s:string) {
+  return (target:any, key:string) => {
+    console.log(key, '=', target[key]);
+    target[key] = s;
+  }
+}
+
+class Cls {
+  @testDecorator('a')
+  static readonly propA = 1;
+}
+
+console.log('Cls.propA', Cls.propA);
+    </textarea>
+
+    <div style="width:1rem;"></div>
+
+    <textarea id="resultTxt" style="flex:1;" placeholder="编译结果"></textarea>
+</div>
+
+<script src="./index.js"></script>
+<script>
+  /**@type HTMLTextAreaElement*/
+  let codeTxt = document.getElementById('codeTxt');
+  /**@type HTMLTextAreaElement*/
+  let resultTxt = document.getElementById('resultTxt');
+
+  /**@type HTMLButtonElement*/
+  let compileBtn = document.getElementById('compileBtn');
+  compileBtn.addEventListener('click', async () => {
+    let result = await compile(codeTxt.value);
+    resultTxt.value = result.outputText;
+  });
+
+  /**@type HTMLButtonElement*/
+  let runBtn = document.getElementById('runBtn');
+  runBtn.addEventListener('click', () => {
+    let code = resultTxt.value;
+    // code = code.replaceAll('import { __decorate } from "tslib";', 'import { __decorate } from "./tslib";');
+    code = code.replaceAll('import { __decorate } from "tslib";', '');
+
+    let tmp = document.createElement('script');
+    tmp.text = code;
+    tmp.type = 'module';
+    document.body.append(tmp);
+  })
+</script>
+</body>
+</html>
