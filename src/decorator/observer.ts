@@ -70,18 +70,4 @@ export class Observer {
     });
   };
 
-
-  static x = (
-    target: any,
-    fnKey: string
-  ) => {
-    debugger;
-    target.___c___ = 'xxx';
-    const fn = target[fnKey];
-    target[fnKey] = function (...args: any[]) {
-      debugger;
-      fn.bind(target)(1,2,3);
-    };
-  };
-
 }

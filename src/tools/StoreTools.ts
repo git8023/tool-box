@@ -1,5 +1,4 @@
 import { vuex } from '../types/types';
-import { namespace } from 'vuex-class';
 
 /**
  * @example
