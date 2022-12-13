@@ -7,9 +7,11 @@ export declare namespace vo {
         data?: T;
         message?: string;
     }
-    type AxiosResponse<T> = {
-        data: {
+    type AxiosResponse<T = any> = {
+        data?: {
             data?: T;
+            [s: string | number]: any;
         };
+        [s: string | number]: any;
     };
 }

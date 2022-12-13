@@ -1,14 +1,30 @@
-import { vo } from '../types/vo';
 import { vmsNet } from '../types/vms-net';
 import { Validation } from '../tools/Validation';
 import { DataPool } from './data-pool';
+import { Logs } from '../tools/Logs';
+import { Builders } from '../tools/Builders';
 
-class Request {
-  static get axios() {
+export class Request {
+
+  /**
+   * Axios服务实例
+   */
+  static get axiosServe() {
     return DataPool.get('AXIOS_SERVICE');
   }
-}
 
+  /**
+   * response前置数据提取
+   * @example
+   * DataPool.set('AXIOS_EXTRACT_RESPONSE', (resp: AxiosResponse):T => {
+   *   // e.g: {data:{code:UnifyResultCode, data:RealData, errorMessage:string}}
+   *   return resp.data;
+   * });
+   */
+  static get extractResponseData() {
+    return DataPool.get('AXIOS_EXTRACT_RESPONSE') || Builders.getterSelf();
+  }
+}
 
 /**
  * GET 请求
@@ -23,7 +39,7 @@ export function Get(uri: string) {
     target[fnKey] = (args?: vmsNet.Parameters) => {
       args = args || {};
       const filledUri = setPathVariable(uri, args);
-      return Request.axios.get(filledUri, { params: args!.params }).then(extractResponseData);
+      return Request.axiosServe.get(filledUri, { params: args!.params }).then(Request.extractResponseData);
     };
   };
 }
@@ -68,18 +84,10 @@ const setPathVariable = (
   return uri.replaceAll(/({[^/]+})/g, (varUnit) => {
     const varName = varUnit.match(/{(.+)}/)![1];
     const varVal = pathVariables[varName];
-    if (Validation.isNot(varVal, 'String') && Validation.isNot(varVal, 'Number'))
-      throw new Error(`缺少路径变量[${varName}]配置`);
-    return varVal.toString();
+    if (Validation.isNullOrUndefined(varVal))
+      Logs.error(`缺少路径变量[${varName}]配置`);
+    return String(varVal);
   });
-};
-
-/**
- * 从统一响应结构中提取目标数据
- * @param resp 响应数据
- */
-const extractResponseData = <T>(resp: vo.AxiosResponse<T>): T => {
-  return resp.data.data!;
 };
 
 /**
@@ -99,7 +107,7 @@ const generateWithPost = (
     target[fnKey] = (args?: vmsNet.Parameters<any, any>) => {
       args = args || {};
       const filledUri = setPathVariable(uri, args);
-      return Request.axios[method](filledUri, args.params).then(extractResponseData);
+      return Request.axiosServe[method](filledUri, args.params).then(Request.extractResponseData);
     };
 
   };

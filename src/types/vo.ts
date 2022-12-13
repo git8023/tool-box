@@ -9,10 +9,12 @@ export namespace vo {
     message?: string;
   }
 
-  export type AxiosResponse<T> = {
-    data: {
-      data?: T
-    }
+  export type AxiosResponse<T = any> = {
+    data?: {
+      data?: T,
+      [s: string | number]: any
+    },
+    [s: string | number]: any
   }
 
 }

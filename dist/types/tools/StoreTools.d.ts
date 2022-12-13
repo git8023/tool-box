@@ -1,6 +1,10 @@
 import { vuex } from '../types/types';
 /**
  * @example
+ * // 先决条件
+ * // yarn add vuex
+ * // yarn add vuex-class
+ *
  * // @file: store/mod/user.ts
  * // 定义通用状态类
  * import {
@@ -17,7 +21,7 @@ import { vuex } from '../types/types';
  * const state = getDefaultState();
  * type T = typeof state;
  *
- * class User implements Module<T, any> {
+ * class UserStore implements Module<T, any> {
  *   namespaced = true;
  *   state = state;
  *   mutations: MutationTree<T> = { ...StoreTools.generateMutations(state) };
@@ -26,8 +30,8 @@ import { vuex } from '../types/types';
  * }
  *
  * export type User = T;
- * export type UserModKey = types.KeyOfOnly<UserMod>;
- * export const user = new User();
+ * export type UserModKey = types.KeyOfOnly<User>;
+ * export const user = new UserStore();
  *
  *
  * // @file: store/index.ts

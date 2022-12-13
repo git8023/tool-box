@@ -1834,20 +1834,45 @@ class Validation {
 
 class DataPoolKey {
     static AXIOS_SERVICE = Symbol('AXIOS_SERVICE');
+    static AXIOS_EXTRACT_RESPONSE = Symbol('AXIOS_EXTRACT_RESPONSE');
 }
 class DataPool {
     static POOL = new Map();
+    /**
+     * 获取配置
+     * @param key 配置项
+     */
     static get(key) {
         return this.POOL.get(key);
     }
+    /**
+     * 设置配置
+     * @param key 配置项
+     * @param o 配置值
+     */
     static set(key, o) {
         this.POOL.set(key, o);
+        return this;
     }
 }
 
 class Request {
-    static get axios() {
+    /**
+     * Axios服务实例
+     */
+    static get axiosServe() {
         return DataPool.get('AXIOS_SERVICE');
+    }
+    /**
+     * response前置数据提取
+     * @example
+     * DataPool.set('AXIOS_EXTRACT_RESPONSE', (resp: AxiosResponse):T => {
+     *   // e.g: {data:{code:UnifyResultCode, data:RealData, errorMessage:string}}
+     *   return resp.data;
+     * });
+     */
+    static get extractResponseData() {
+        return DataPool.get('AXIOS_EXTRACT_RESPONSE') || Builders.getterSelf();
     }
 }
 /**
@@ -1860,7 +1885,7 @@ function Get(uri) {
         target[fnKey] = (args) => {
             args = args || {};
             const filledUri = setPathVariable(uri, args);
-            return Request.axios.get(filledUri, { params: args.params }).then(extractResponseData);
+            return Request.axiosServe.get(filledUri, { params: args.params }).then(Request.extractResponseData);
         };
     };
 }
@@ -1898,17 +1923,10 @@ const setPathVariable = (uri, args) => {
     return uri.replaceAll(/({[^/]+})/g, (varUnit) => {
         const varName = varUnit.match(/{(.+)}/)[1];
         const varVal = pathVariables[varName];
-        if (Validation.isNot(varVal, 'String') && Validation.isNot(varVal, 'Number'))
-            throw new Error(`缺少路径变量[${varName}]配置`);
-        return varVal.toString();
+        if (Validation.isNullOrUndefined(varVal))
+            Logs.error(`缺少路径变量[${varName}]配置`);
+        return String(varVal);
     });
-};
-/**
- * 从统一响应结构中提取目标数据
- * @param resp 响应数据
- */
-const extractResponseData = (resp) => {
-    return resp.data.data;
 };
 /**
  * 生成POST相关请求
@@ -1920,7 +1938,7 @@ const generateWithPost = (uri, method) => {
         target[fnKey] = (args) => {
             args = args || {};
             const filledUri = setPathVariable(uri, args);
-            return Request.axios[method](filledUri, args.params).then(extractResponseData);
+            return Request.axiosServe[method](filledUri, args.params).then(Request.extractResponseData);
         };
     };
 };
@@ -2264,15 +2282,6 @@ class Observer {
             };
         });
     };
-    static x = (target, fnKey) => {
-        debugger;
-        target.___c___ = 'xxx';
-        const fn = target[fnKey];
-        target[fnKey] = function (...args) {
-            debugger;
-            fn.bind(target)(1, 2, 3);
-        };
-    };
 }
 
 /**
@@ -2309,6 +2318,10 @@ class Storages {
 
 /**
  * @example
+ * // 先决条件
+ * // yarn add vuex
+ * // yarn add vuex-class
+ *
  * // @file: store/mod/user.ts
  * // 定义通用状态类
  * import {
@@ -2325,7 +2338,7 @@ class Storages {
  * const state = getDefaultState();
  * type T = typeof state;
  *
- * class User implements Module<T, any> {
+ * class UserStore implements Module<T, any> {
  *   namespaced = true;
  *   state = state;
  *   mutations: MutationTree<T> = { ...StoreTools.generateMutations(state) };
@@ -2334,8 +2347,8 @@ class Storages {
  * }
  *
  * export type User = T;
- * export type UserModKey = types.KeyOfOnly<UserMod>;
- * export const user = new User();
+ * export type UserModKey = types.KeyOfOnly<User>;
+ * export const user = new UserStore();
  *
  *
  * // @file: store/index.ts
@@ -2474,4 +2487,4 @@ class Documents {
     }
 }
 
-export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Delete, Documents, Events, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Post, Promises, PropChains, Put, Storages, StoreTools, Strings, Switcher, Validation };
+export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Delete, Documents, Events, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Post, Promises, PropChains, Put, Request, Storages, StoreTools, Strings, Switcher, Validation };

@@ -15,7 +15,9 @@ axiosService.interceptors.response.use(resp => {
   return resp;
 });
 
-DataPool.set('AXIOS_SERVICE', axiosService);
+DataPool
+  .set('AXIOS_SERVICE', axiosService)
+  .set('AXIOS_EXTRACT_RESPONSE', (resp) => resp.data!.data);
 
 class NetApi {
 

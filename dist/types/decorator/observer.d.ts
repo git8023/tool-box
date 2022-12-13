@@ -13,5 +13,4 @@ export declare class Observer {
      * @param [interval=10] 第N+1次断言间隔时间(ms)
      */
     static lazy: <T>(predicate: fns.HandlerPs<boolean, T>, lazy?: number, interval?: number) => (target: any, fnKey: string) => void;
-    static x: (target: any, fnKey: string) => void;
 }

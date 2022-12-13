@@ -86,5 +86,5 @@ export declare namespace vuex {
     };
     type MutationTree<T> = types.RecordS<(state: T, payload?: any) => any>;
     type ActionTree<T, R = any> = types.RecordS<(ctx: ActionContext<T, R>, payload?: any) => void>;
-    type GetterTree<S, R> = types.RecordS<(state: S, getters: any, rootState: R, rootGetters: any) => any>;
+    type GetterTree<S, R = any> = types.RecordS<(state: S, getters: any, rootState: R, rootGetters: any) => any>;
 }
