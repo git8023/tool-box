@@ -3,6 +3,10 @@ import { Validation } from '../tools/Validation';
 import { DataPool } from './data-pool';
 import { Logs } from '../tools/Logs';
 import { Builders } from '../tools/Builders';
+import { Decorators } from './decorators';
+import { fns } from '../types/fns';
+import { Functions } from '../tools/Functions';
+import { vo } from '../types/vo';
 
 export class Request {
 
@@ -69,6 +73,23 @@ export function Post(uri: string) {
  */
 export function Put(uri: string) {
   return generateWithPost(uri, 'put');
+}
+
+/**
+ * 响应结果拦截
+ * @param observer 默认值
+ * @constructor
+ */
+export function Filter<R = any, T = any>(observer: fns.Getter<R, vo.AxiosResponse<T>>) {
+  return Decorators.proxy((
+    thisArg,
+    { target, vof },
+    args
+  ) => {
+    const fn = (vof as Function).bind(target);
+    const resp: Promise<any> = fn(...args);
+    return resp.then((data) => Functions.call(observer, data, args));
+  });
 }
 
 /**

@@ -208,7 +208,7 @@ export class Condition<ND, PD> {
    * @param handler 处理器
    * @return 处理器执行结果
    */
-  result<R>(handler: fns.HandlerPs2<R, boolean, PD, ND>): R {
+  result<R>(handler: fns.HandlerT9<R, boolean, PD, ND>): R {
     return Functions.call(handler, this.c, this.positiveDesc, this.negativeDesc)!;
   }
 

@@ -1,4 +1,4 @@
-export { Get, Put, Post, Delete, Request } from './decorator/http-request';
+export { Get, Put, Post, Delete, Filter, Request } from './decorator/http-request';
 export { DataPool, DataPoolKey } from './decorator/data-pool';
 export { Events } from './decorator/events';
 export { Observer } from './decorator/observer';

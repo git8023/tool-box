@@ -1,3 +1,5 @@
+import { fns } from '../types/fns';
+import { vo } from '../types/vo';
 export declare class Request {
     /**
      * Axios服务实例
@@ -37,3 +39,9 @@ export declare function Post(uri: string): (target: any, fnKey: string) => void;
  * @constructor
  */
 export declare function Put(uri: string): (target: any, fnKey: string) => void;
+/**
+ * 响应结果拦截
+ * @param observer 默认值
+ * @constructor
+ */
+export declare function Filter<R = any, T = any>(observer: fns.Getter<R, vo.AxiosResponse<T>>): (target: any, fnKey: string) => void;

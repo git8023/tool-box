@@ -12,7 +12,7 @@ export class Functions {
    * @return 函数返回值
    */
   static call<R, T = void>(
-    fn?: fns.Handler<T, R>,
+    fn?: fns.HandlerT9<R, T, any, any, any, any, any, any, any, any>,
     ...args: any[]
   ): R | undefined {
     return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, ...args) : undefined;

@@ -1860,6 +1860,34 @@ class DataPool {
     }
 }
 
+/**
+ * 装饰器工具类
+ */
+class Decorators {
+    /**
+     * 生成类(class)装饰
+     * @param call 装饰器逻辑
+     */
+    static class = (call) => (target) => call({ target });
+    /**
+     * 生成函数(Function)装饰器
+     * @param call 装饰器逻辑
+     */
+    static method = (call) => (target, fnKey) => call({ target, fnKey });
+    /**
+     * 代理
+     * @param call 属性代理逻辑
+     */
+    static proxy = (call) => {
+        return Decorators.method(({ target, fnKey }) => {
+            const vof = target[fnKey];
+            target[fnKey] = function (...args) {
+                return call(this, { target, key: fnKey, vof }, args);
+            };
+        });
+    };
+}
+
 class Request {
     /**
      * Axios服务实例
@@ -1916,6 +1944,18 @@ function Post(uri) {
  */
 function Put(uri) {
     return generateWithPost(uri, 'put');
+}
+/**
+ * 响应结果拦截
+ * @param observer 默认值
+ * @constructor
+ */
+function Filter(observer) {
+    return Decorators.proxy((thisArg, { target, vof }, args) => {
+        const fn = vof.bind(target);
+        const resp = fn(...args);
+        return resp.then((data) => Functions.call(observer, data, args));
+    });
 }
 /**
  * 设置路径参数
@@ -2223,22 +2263,6 @@ class Events {
     }
 }
 
-/**
- * 装饰器工具类
- */
-class Decorators {
-    /**
-     * 生成类(class)装饰
-     * @param call 装饰器逻辑
-     */
-    static class = (call) => (target) => call({ target });
-    /**
-     * 生成函数(Function)装饰器
-     * @param call 装饰器逻辑
-     */
-    static method = (call) => (target, fnKey) => call({ target, fnKey });
-}
-
 class Observer {
     /**
      * 记录日志
@@ -2505,6 +2529,7 @@ exports.Dates = Dates;
 exports.Delete = Delete;
 exports.Documents = Documents;
 exports.Events = Events;
+exports.Filter = Filter;
 exports.Functions = Functions;
 exports.Get = Get;
 exports.Jsons = Jsons;

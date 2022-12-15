@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Logs } from '../src/tools/Logs';
 import { DataPool } from '../src/decorator/data-pool';
-import { Delete, Get, Post, Put } from '../src/decorator/http-request';
+import { Delete, Filter, Get, Post, Put } from '../src/decorator/http-request';
 import { vmsNet } from '../src/types/vms-net';
 
 const axiosService = axios.create({ url: '/', });
@@ -22,6 +22,9 @@ DataPool
 class NetApi {
 
   @Get('/test')
+  @Filter(data => {
+    return { code: 200, data: 'ok' };
+  })
   static readonly get: vmsNet.GetMapping;
 
   @Post('/test')
@@ -40,7 +43,9 @@ class NetApi {
 describe('http-request', () => {
 
   test('GET', () => {
-    NetApi.get().then(Logs.info).catch(Logs.warn);
+    NetApi.get().then((data) => {
+      expect(data).toEqual({ code: 200, data: 'ok' });
+    });
   });
 
 });

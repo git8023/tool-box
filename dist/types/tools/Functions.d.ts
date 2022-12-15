@@ -6,7 +6,7 @@ export declare class Functions {
      * @param [args] 请求参数
      * @return 函数返回值
      */
-    static call<R, T = void>(fn?: fns.Handler<T, R>, ...args: any[]): R | undefined;
+    static call<R, T = void>(fn?: fns.HandlerT9<R, T, any, any, any, any, any, any, any, any>, ...args: any[]): R | undefined;
     /**
      * 执行数据获取函数
      * @param vog 数据或数据获取函数
