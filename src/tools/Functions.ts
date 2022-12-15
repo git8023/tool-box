@@ -21,22 +21,28 @@ export class Functions {
   /**
    * 执行数据获取函数
    * @param vog 数据或数据获取函数
+   * @param [args] 执行参数
    */
   static execOrGetter<T, I = void>(
     vog: fns.OrGetter<T, I>,
+    ...args: any[]
   ): T {
-    return vog instanceof Function ? Functions.call<T, I>(vog)! : vog;
+    return vog instanceof Function ? Functions.call<T, I>(vog, ...args)! : vog;
   }
 
   /**
    * 执行异步获取函数
    * @param oag 数据或同步/异步数据获取函数
+   * @param [args] 函数执行参数
    */
-  static execOrAsyncGetter<T>(oag: fns.OrAsyncGetter<void, T>): Promise<T> {
+  static execOrAsyncGetter<T>(
+    oag: fns.OrAsyncGetter<void, T>,
+    ...args: any[]
+  ): Promise<T> {
     if (oag instanceof Promise)
       return oag as Promise<T>;
 
-    const data = this.execOrGetter(oag as fns.OrGetter<T>);
+    const data = this.execOrGetter(oag as fns.OrGetter<T>, ...args);
     return Promises.from(data);
   }
 
