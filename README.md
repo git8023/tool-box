@@ -10,6 +10,13 @@
     - 尽量使用类型约束, 减少错误产生概率
     - 基于一些个人爱好创造一些特殊轮子
 
+# 安装
+```shell
+$ npm install @hyong8023/tool-box@latest
+# or
+$ yarn add @hyong8023/tool-box@latest
+```
+
 # 目的
 
 1. 抽取重复逻辑隔离变化
