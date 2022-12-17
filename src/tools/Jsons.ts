@@ -1,10 +1,9 @@
-// 常规通用工具
-import { Validation } from './Validation';
+import { fns } from '../types/fns';
 import { Arrays } from './Arrays';
 import { Cast } from './Cast';
-import { fns } from '../types/fns';
+import { Functions } from './Functions';
 import { PropChains } from './PropChains';
-import { types } from '../types/types';
+import { Validation } from './Validation';
 
 export class Jsons {
 
@@ -75,14 +74,16 @@ export class Jsons {
    * @param o 对象
    * @param handler 返回false停止后续, 否则直到结束
    */
-  static foreach<T extends object, K extends keyof T, P extends T[K]>(
+  static foreach<T extends { [s in K]: P }, K extends keyof T, P extends T[K]>(
     o: T,
     handler: fns.ObjectIteratorHandler<P>
   ) {
-    if (Validation.nullOrUndefined(o)) return;
+    if (Validation.nullOrUndefined(o)) {
+      return;
+    }
 
     Arrays.foreach(Object.keys(o), el => {
-      return handler({ item: o[el.item as keyof T] as P, index: el.item });
+      return handler({ item: o[el.item as keyof T], index: el.item });
     });
   }
 
@@ -108,7 +109,7 @@ export class Jsons {
    * @param key 属性名
    * @param fp 属性值计算过程
    */
-  static computeIfAbsent<T extends Record<K, R>, K extends keyof T = keyof T, R extends T[K] = T[K]>(
+  static computeIfAbsent<T extends Partial<{ [p in K]: R }>, K extends keyof T, R>(
     store: T,
     key: K,
     fp: R | ((
@@ -118,24 +119,24 @@ export class Jsons {
   ): R {
 
     // 数组
-    if (Validation.is(store, 'Array')) {
-      const arr: any[] = Cast.as(store);
-      const arrIndex: number = Cast.as(key);
-      let el = arr[arrIndex];
-      if (Validation.isNullOrUndefined(el)) {
-        el = (fp instanceof Function) ? fp(store, key) : fp;
-        arr.splice(arrIndex, 0, el);
+    if (Validation.is(store, 'Array') && store instanceof Array) {
+      const val: R = this.get(store, key);
+      if (Validation.notNil(val)) {
+        return val;
       }
-      return el;
+
+      const newlyVal = Functions.execOrGetter(fp, store, key);
+      Jsons.set(store, key, newlyVal);
+      return newlyVal;
     }
 
     if (key in store) {
       return <R>store[key];
     }
 
-    const val = (fp instanceof Function) ? fp(store, key) : fp;
-    store[key] = val;
-    return val;
+    const newlyVal = Functions.execOrGetter(fp, store, key);
+    Jsons.set(store, key, newlyVal);
+    return newlyVal;
   }
 
   /**
@@ -156,7 +157,9 @@ export class Jsons {
     emptyObj = false,
     emptyArray = false
   ): T {
-    if (!data) return data;
+    if (!data) {
+      return data;
+    }
 
     const delKey = (
       o: any,
@@ -225,20 +228,45 @@ export class Jsons {
   }
 
   /**
+   * 设置属性值
+   * @param o 目标对象
+   * @param propChain 属性链
+   * @param v 值
+   */
+  static set<R, T = any>(
+    o: T,
+    propChain: (keyof T) | string,
+    v: R
+  ): R {
+    return PropChains.setValue(o, String(propChain), v);
+  }
+
+  /**
    * 对象属性平铺
    * @param src 目标对象
    * @param convert 转换函数
    * @return 转换结果
    */
-  static flat<T extends object, R, P extends keyof T, V extends T[P]>(
+  static flat<T extends { [s in K]: P }, K extends keyof T, P extends T[K], R = any>(
     src: T,
-    convert: fns.ObjectIteratorHandler<V, R>
+    convert: fns.ObjectIteratorHandler<P, R>
   ): R[] {
     const results: R[] = [];
     this.foreach(src, iter => {
-      const result = convert(Cast.as(iter));
+      const result = convert(iter);
       results.push(result);
     });
     return results;
+  }
+
+  /**
+   * 清空对象所有属性
+   * @param o 目标对象
+   */
+  static clear<T extends object>(o: T): T {
+    this.foreach(o, iter => {
+      o[iter.index as keyof T] = undefined as any;
+    });
+    return o;
   }
 }

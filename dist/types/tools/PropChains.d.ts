@@ -14,4 +14,5 @@ export declare class PropChains {
      * @param ognl ognl表达式
      */
     static getValue<R>(data: any, ognl: string): R;
+    static setValue<T, R>(o: T, propChain: string, v: R): R;
 }

@@ -1,15 +1,12 @@
 import { fns } from '../types/fns';
 import { types } from '../types/types';
-import { Functions } from './Functions';
 import { BError } from './BError';
-import { Validation } from './Validation';
-import { Cast } from './Cast';
-import { Promises } from './Promises';
+import { Functions } from './Functions';
 import { Logs } from './Logs';
+import { Promises } from './Promises';
+import { Validation } from './Validation';
 
-/**
- * 异步数组相关类型定义
- */
+// 异步数组相关类型定义
 export namespace asi {
 
   /**
@@ -206,25 +203,29 @@ export class AsyncArrayStream<T, R = any> {
    */
   next(): Promise<void> {
     return Functions.execOrAsyncGetter<any>(() => {
-      if (this.isOver)
+      if (this.isOver) {
         return Promise.reject('数据已经处理完成');
+      }
 
       // 首次调用前
       if (this.cursor === 0) {
         this.isOver = (false === Functions.call(this.events.begin, this));
-        if (this.isOver)
+        if (this.isOver) {
           return;
+        }
       }
 
       // 空数组
       const elements = this.elements || [];
       if (0 === elements.length) {
-        const backupGetter = Functions.call(this.events.empty, this);
-        if (Validation.isNullOrUndefined(backupGetter)) {
+        const valOfSecond = Functions.execOrAsyncGetter(this.events.empty as any, this)!;
+        if (Validation.isNil(valOfSecond)) {
           this.isOver = true;
           return;
         } else {
-          return this.init(Cast.as(backupGetter));
+          this.reset();
+          this.array$ = valOfSecond;
+          return this.next();
         }
       }
 
@@ -281,12 +282,20 @@ export class AsyncArrayStream<T, R = any> {
    * @param arrayGetter 数据或数据获取函数
    */
   private init(arrayGetter: fns.OrAsyncGetter<void, T[]>): Promise<void> {
-    this.cursor = 0;
-    this.isOver = false;
-    this.result = undefined;
+    this.reset();
 
     this.array$ = Functions.execOrAsyncGetter(arrayGetter);
     return this.await();
+  }
+
+  /**
+   * 重置为初始化状态
+   * @private
+   */
+  private reset() {
+    this.cursor = 0;
+    this.isOver = false;
+    this.result = undefined;
   }
 
   /**
@@ -294,22 +303,23 @@ export class AsyncArrayStream<T, R = any> {
    * @private
    */
   private await(): Promise<void> {
-    if (this.waitPromise)
+    if (this.waitPromise) {
       this.waitPromise.abort();
+    }
 
     this.waitPromise = Promises.control(this.array$
-      .then((data) => {
-        this.elements = data;
-        return this.next();
-      })
-      .then(() => {
-        this.result = Functions.call(this.events.done, this);
-        this.events.done = undefined;
-        this.callDelegateResult();
-      })
-      .catch((e) => {
-        this.catch(e);
-      }));
+                                            .then((data) => {
+                                              this.elements = data;
+                                              return this.next();
+                                            })
+                                            .then(() => {
+                                              this.result = Functions.call(this.events.done, this);
+                                              this.events.done = undefined;
+                                              this.callDelegateResult();
+                                            })
+                                            .catch((e) => {
+                                              this.catch(e);
+                                            }));
     return this.waitPromise;
   }
 
@@ -330,7 +340,11 @@ export class AsyncArrayStream<T, R = any> {
    * @private
    */
   private callDelegateResult() {
-    const result: asi.ResultEventData<R> = { result: this.result!, broken: this.brokenInfo, brokenType: this.brokenType };
+    const result: asi.ResultEventData<R> = {
+      result: this.result!,
+      broken: this.brokenInfo,
+      brokenType: this.brokenType
+    };
     Functions.call(this.delegateResult, result);
     this.delegateResult = undefined;
   }

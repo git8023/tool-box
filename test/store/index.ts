@@ -1,13 +1,9 @@
-import { namespace } from 'vuex-class';
-import { reactive, ref } from 'vue';
+import { createStore } from 'vuex';
+// @ts-ignore
+import { sys } from './mod/sys2';
 
-export class Store {
-
-  static readonly sys = namespace('sys');
-
-}
-
-const x = ref(1);
-x.value;
-
-const o = reactive({x});
+export default createStore({
+  modules: {
+    [sys.__name__]: sys,
+  },
+});

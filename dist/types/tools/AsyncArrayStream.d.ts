@@ -1,8 +1,5 @@
 import { fns } from '../types/fns';
 import { types } from '../types/types';
-/**
- * 异步数组相关类型定义
- */
 export declare namespace asi {
     /**
      * 错误事件数据
@@ -173,6 +170,11 @@ export declare class AsyncArrayStream<T, R = any> {
      * @param arrayGetter 数据或数据获取函数
      */
     private init;
+    /**
+     * 重置为初始化状态
+     * @private
+     */
+    private reset;
     /**
      * 等待数据返回
      * @private

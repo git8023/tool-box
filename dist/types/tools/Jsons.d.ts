@@ -26,7 +26,9 @@ export declare class Jsons {
      * @param o 对象
      * @param handler 返回false停止后续, 否则直到结束
      */
-    static foreach<T extends object, K extends keyof T, P extends T[K]>(o: T, handler: fns.ObjectIteratorHandler<P>): void;
+    static foreach<T extends {
+        [s in K]: P;
+    }, K extends keyof T, P extends T[K]>(o: T, handler: fns.ObjectIteratorHandler<P>): void;
     /**
      * 把src浅克隆到dist中
      * @param src 数据对象
@@ -39,7 +41,9 @@ export declare class Jsons {
      * @param key 属性名
      * @param fp 属性值计算过程
      */
-    static computeIfAbsent<T extends Record<K, R>, K extends keyof T = keyof T, R extends T[K] = T[K]>(store: T, key: K, fp: R | ((store: T, key: string | keyof T) => R)): R;
+    static computeIfAbsent<T extends Partial<{
+        [p in K]: R;
+    }>, K extends keyof T, R>(store: T, key: K, fp: R | ((store: T, key: string | keyof T) => R)): R;
     /**
      * 对象紧凑处理
      * @param data 数据对象(无副作用)
@@ -59,10 +63,24 @@ export declare class Jsons {
      */
     static get<R, T = any>(o: T, propChain: (keyof T) | string): R;
     /**
+     * 设置属性值
+     * @param o 目标对象
+     * @param propChain 属性链
+     * @param v 值
+     */
+    static set<R, T = any>(o: T, propChain: (keyof T) | string, v: R): R;
+    /**
      * 对象属性平铺
      * @param src 目标对象
      * @param convert 转换函数
      * @return 转换结果
      */
-    static flat<T extends object, R, P extends keyof T, V extends T[P]>(src: T, convert: fns.ObjectIteratorHandler<V, R>): R[];
+    static flat<T extends {
+        [s in K]: P;
+    }, K extends keyof T, P extends T[K], R = any>(src: T, convert: fns.ObjectIteratorHandler<P, R>): R[];
+    /**
+     * 清空对象所有属性
+     * @param o 目标对象
+     */
+    static clear<T extends object>(o: T): T;
 }

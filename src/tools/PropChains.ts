@@ -1,6 +1,7 @@
-import { Validation } from './Validation';
 import { Arrays } from './Arrays';
+import { BError } from './BError';
 import { Cast } from './Cast';
+import { Validation } from './Validation';
 
 /**
  * OGNL表达式解析对象
@@ -107,7 +108,9 @@ export class PropChains {
     let val = arr;
     // jstAPI.common.eachValue(idxes, function (v) {
     Arrays.foreach(idxes, (v) => {
-      if (Validation.isNot(val, 'Array')) return false;
+      if (Validation.isNot(val, 'Array')) {
+        return false;
+      }
       val = val[parseInt((v + '').replace('[', '').replace(']', ''))];
     });
     return val;
@@ -122,15 +125,18 @@ export class PropChains {
     data: any,
     ognl: string
   ): R {
-    if (Validation.nullOrUndefined(data)) return null!;
+    if (Validation.nullOrUndefined(data)) {
+      return null!;
+    }
     ognl = ognl.trim();
 
     const keys = ognl.split('.');
     if (1 === keys.length) {
       // 非数组
       const regex = /\[/;
-      if (!regex.test(ognl))
+      if (!regex.test(ognl)) {
         return data ? data[ognl] : data;
+      }
       return PropChains.getArrOgnlVal(data, ognl);
     }
 
@@ -142,4 +148,9 @@ export class PropChains {
     return PropChains.getValue(valObj, newOgnl);
   }
 
+  static setValue<T, R>(o: T, propChain: string, v: R): R {
+    // return v;
+    BError.throwError('[Unsupported] 计划中暂未实现');
+    return v;
+  }
 }

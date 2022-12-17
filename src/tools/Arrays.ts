@@ -96,13 +96,16 @@ export class Arrays {
     b: T[],
     convertor?: fns.ArrayKeyMapper<T, any>
   ): T[] {
-    if (a === b) return a;
+    if (a === b) {
+      return a;
+    }
     const itemHandler = Builders.toArrayKeyMapperHandler(convertor, 'element');
 
     const data: T[] = [];
     if (Validation.isNot(a, 'Array') || Validation.isEmpty(a)
-      || Validation.isNot(b, 'Array') || Validation.isEmpty(b))
+      || Validation.isNot(b, 'Array') || Validation.isEmpty(b)) {
       return data;
+    }
 
     return Logics
       .case(a.length >= b.length, { src: a, other: b })
@@ -150,8 +153,9 @@ export class Arrays {
       const children = Functions.call(recursion, item);
       if (Validation.is(children, 'Array')) {
         result = Arrays.seek(<T[]>children, observer, recursion);
-        if (Validation.notEmpty(result))
+        if (Validation.notEmpty(result)) {
           return false;
+        }
       }
 
       return true;
@@ -170,11 +174,15 @@ export class Arrays {
     arr: Array<T>,
     handler: fns.ArrayIteratorHandler<T>
   ): T[] {
-    if (Validation.isNot(arr, 'Array')) return arr;
+    if (Validation.isNot(arr, 'Array')) {
+      return arr;
+    }
 
-    for (let index = 0, len = arr.length; index < len; index++)
-      if (false === handler({ item: arr[index], index }))
+    for (let index = 0, len = arr.length; index < len; index++) {
+      if (false === handler({ item: arr[index], index })) {
         break;
+      }
+    }
 
     return arr;
   }
@@ -192,8 +200,9 @@ export class Arrays {
     predictor?: fns.ArrayPredictor<T>
   ): number {
     const item = Arrays.index(arr, el, predictor);
-    if (-1 !== item.index)
+    if (-1 !== item.index) {
       return item.index;
+    }
     return arr.push(el) - 1;
   }
 
@@ -246,8 +255,9 @@ export class Arrays {
     dist: Array<T>,
     src: Array<T>
   ): Array<T> {
-    if (Validation.isNot(dist, 'Array') || Validation.isNot(src, 'Array'))
+    if (Validation.isNot(dist, 'Array') || Validation.isNot(src, 'Array')) {
       throw new Error('无效数组参数');
+    }
     Array.prototype.push.apply(dist, src);
     return dist;
   }
@@ -331,7 +341,7 @@ export class Arrays {
     const itemHandler = Builders.toArrayKeyMapperHandler(mapper);
     Arrays.foreach(arr, (el) => {
       const rk = itemHandler(el);
-      Jsons.computeIfAbsent<types.RecordS<T[]>>(ret, rk, []).push(el.item);
+      Jsons.computeIfAbsent(ret, rk, [] as T[]).push(el.item);
     });
     return ret;
   }
@@ -349,8 +359,9 @@ export class Arrays {
     const vs: P[] = [];
     Arrays.foreach(arr, (item) => {
       const val: P = Jsons.get(item.item, propChain);
-      if (Validation.notEmpty(val))
+      if (Validation.notEmpty(val)) {
         vs.push(val);
+      }
     });
     return vs;
   }
@@ -367,7 +378,9 @@ export class Arrays {
     cover = true,
     akm?: fns.ArrayKeyMapper<T>
   ): T[] {
-    if (0 === src.length) return src;
+    if (0 === src.length) {
+      return src;
+    }
 
     const keyMapper = Builders.toArrayKeyMapperHandler(akm, 'element');
     const result: T[] = [];
@@ -398,7 +411,9 @@ export class Arrays {
     start: number,
     end: number
   ): number[] {
-    if (0 >= end - start) return [];
+    if (0 >= end - start) {
+      return [];
+    }
     const keyIter = new Array(end + 1).keys();
     return [...keyIter].slice(start);
   }
@@ -431,7 +446,9 @@ export class Arrays {
     Arrays.foreach(arr, el => {
       const pid: types.KeyOf<T> = Jsons.get(el.item, parentIndex.toString());
       const parent: T = keyMapper[pid];
-      if (!parent) return;
+      if (!parent) {
+        return;
+      }
 
       childrenIds.push(Jsons.get<string>(el.item, parentKey.toString()));
       const children: T[CK] = Jsons.computeIfAbsent(parent, childKey, [] as any);
@@ -463,16 +480,22 @@ export class Arrays {
     delChildren = false
   ): T[] {
     const arr: T[] = hasRoot ? [root] : [];
-    if (Validation.isNot(root, 'Object')) return arr;
+    if (Validation.isNot(root, 'Object')) {
+      return arr;
+    }
 
     Arrays.foreach<T>(root[childKey], (el) => {
       arr.push(el.item);
 
       const children = Arrays.flatTreeSR(el.item, childKey, false, delChildren);
-      if (Validation.notEmpty(children)) arr.push(...children);
+      if (Validation.notEmpty(children)) {
+        arr.push(...children);
+      }
     });
 
-    if (delChildren) delete root[childKey];
+    if (delChildren) {
+      delete root[childKey];
+    }
     return arr;
   }
 

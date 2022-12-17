@@ -1,3 +1,4 @@
+import { VuexDecorator } from 'vuex-class/lib/bindings';
 export declare namespace types {
     /**
      * 基本数据类型字符串值
@@ -87,4 +88,38 @@ export declare namespace vuex {
     type MutationTree<T> = types.RecordS<(state: T, payload?: any) => any>;
     type ActionTree<T, R = any> = types.RecordS<(ctx: ActionContext<T, R>, payload?: any) => void>;
     type GetterTree<S, R = any> = types.RecordS<(state: S, getters: any, rootState: R, rootGetters: any) => any>;
+    interface ModuleTree<R> {
+        [key: string]: Module<any, R>;
+    }
+    interface Module<S, R> {
+        namespaced?: boolean;
+        state?: S | (() => S);
+        getters?: GetterTree<S, R>;
+        actions?: ActionTree<S, R>;
+        mutations?: MutationTree<S>;
+        modules?: ModuleTree<R>;
+    }
+    interface ModuleX<S, R> extends Module<S, R> {
+        /**命名空间名字*/
+        readonly __name__: string;
+        /**
+         * 重置状态
+         */
+        __reset__(): void;
+        /**
+         * 仅用于State类型获取, 返回值总是undefined
+         */
+        __state_type__(): S;
+        /**
+         仅用于State类型属性获取, 返回值总是undefined
+         */
+        __state_type_key__(): keyof S;
+    }
+    type NamespaceT<T> = {
+        State: (transfer: (prop: keyof T) => any) => VuexDecorator;
+        Getter: (prop: keyof T) => VuexDecorator;
+        Mutation: (prop: keyof T) => VuexDecorator;
+        Action: (prop: keyof T) => VuexDecorator;
+    };
+    type NamespaceX = <T extends object>(store: vuex.ModuleX<T, any>) => vuex.NamespaceT<T>;
 }

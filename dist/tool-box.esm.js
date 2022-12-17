@@ -1,4 +1,5 @@
 import { createDecorator } from 'vue-class-component';
+import { namespace } from 'vuex-class';
 
 class Cast {
     /**
@@ -21,7 +22,7 @@ class Cast {
     }
     /**
      * 指定对象转换为目标类型
-     * @param [o=Object()] 对象
+     * @param [o] 对象
      * @return 目标类型
      */
     static as(o = {}) {
@@ -32,12 +33,29 @@ class Cast {
      * @param err 错误消息或错误对象
      */
     static error(err) {
-        if (err instanceof Error)
+        if (err instanceof Error) {
             return err;
-        else if (typeof err === 'string')
+        }
+        else if (typeof err === 'string') {
             return Error(err);
-        else
+        }
+        else {
             return Error('undefined');
+        }
+    }
+    /**
+     * 对象安全代理，防止出现在 undefined 目标上获取属性
+     * @param o 目标对象
+     * @param [dv] 目标对象为nil时代替目标对象成为被代理对象
+     * @param [settable=true] 是否允许执行setter
+     * @return 代理对象
+     */
+    static asSafety(o, dv = {}, settable = true) {
+        return new Proxy(o ?? Cast.as(dv), {
+            set() {
+                return settable;
+            }
+        });
     }
 }
 
@@ -845,13 +863,15 @@ class Arrays {
      * @param [convertor] 可比较值值转换器
      */
     static intersection(a, b, convertor) {
-        if (a === b)
+        if (a === b) {
             return a;
+        }
         const itemHandler = Builders.toArrayKeyMapperHandler(convertor, 'element');
         const data = [];
         if (Validation.isNot(a, 'Array') || Validation.isEmpty(a)
-            || Validation.isNot(b, 'Array') || Validation.isEmpty(b))
+            || Validation.isNot(b, 'Array') || Validation.isEmpty(b)) {
             return data;
+        }
         return Logics
             .case(a.length >= b.length, { src: a, other: b })
             .otherwise({ src: b, other: a })
@@ -888,8 +908,9 @@ class Arrays {
             const children = Functions.call(recursion, item);
             if (Validation.is(children, 'Array')) {
                 result = Arrays.seek(children, observer, recursion);
-                if (Validation.notEmpty(result))
+                if (Validation.notEmpty(result)) {
                     return false;
+                }
             }
             return true;
         });
@@ -902,11 +923,14 @@ class Arrays {
      * @return 原始数组
      */
     static foreach(arr, handler) {
-        if (Validation.isNot(arr, 'Array'))
+        if (Validation.isNot(arr, 'Array')) {
             return arr;
-        for (let index = 0, len = arr.length; index < len; index++)
-            if (false === handler({ item: arr[index], index }))
+        }
+        for (let index = 0, len = arr.length; index < len; index++) {
+            if (false === handler({ item: arr[index], index })) {
                 break;
+            }
+        }
         return arr;
     }
     /**
@@ -918,8 +942,9 @@ class Arrays {
      */
     static pushUnique(arr, el, predictor) {
         const item = Arrays.index(arr, el, predictor);
-        if (-1 !== item.index)
+        if (-1 !== item.index) {
             return item.index;
+        }
         return arr.push(el) - 1;
     }
     /**
@@ -958,8 +983,9 @@ class Arrays {
      * @return 目标数组
      */
     static concat(dist, src) {
-        if (Validation.isNot(dist, 'Array') || Validation.isNot(src, 'Array'))
+        if (Validation.isNot(dist, 'Array') || Validation.isNot(src, 'Array')) {
             throw new Error('无效数组参数');
+        }
         Array.prototype.push.apply(dist, src);
         return dist;
     }
@@ -1034,8 +1060,9 @@ class Arrays {
         const vs = [];
         Arrays.foreach(arr, (item) => {
             const val = Jsons.get(item.item, propChain);
-            if (Validation.notEmpty(val))
+            if (Validation.notEmpty(val)) {
                 vs.push(val);
+            }
         });
         return vs;
     }
@@ -1047,8 +1074,9 @@ class Arrays {
      * @return 处理结果. 如果 <i>cover===false</i> 结果为新数组, 否则返回 <i>src</i>
      */
     static unique(src, cover = true, akm) {
-        if (0 === src.length)
+        if (0 === src.length) {
             return src;
+        }
         const keyMapper = Builders.toArrayKeyMapperHandler(akm, 'element');
         const result = [];
         const keys = [];
@@ -1072,8 +1100,9 @@ class Arrays {
      * @return 数组长度: end - start + 1
      */
     static genNums(start, end) {
-        if (0 >= end - start)
+        if (0 >= end - start) {
             return [];
+        }
         const keyIter = new Array(end + 1).keys();
         return [...keyIter].slice(start);
     }
@@ -1093,8 +1122,9 @@ class Arrays {
         Arrays.foreach(arr, el => {
             const pid = Jsons.get(el.item, parentIndex.toString());
             const parent = keyMapper[pid];
-            if (!parent)
+            if (!parent) {
                 return;
+            }
             childrenIds.push(Jsons.get(el.item, parentKey.toString()));
             const children = Jsons.computeIfAbsent(parent, childKey, []);
             children.push(el.item);
@@ -1117,16 +1147,19 @@ class Arrays {
      */
     static flatTreeSR(root, childKey, hasRoot = true, delChildren = false) {
         const arr = hasRoot ? [root] : [];
-        if (Validation.isNot(root, 'Object'))
+        if (Validation.isNot(root, 'Object')) {
             return arr;
+        }
         Arrays.foreach(root[childKey], (el) => {
             arr.push(el.item);
             const children = Arrays.flatTreeSR(el.item, childKey, false, delChildren);
-            if (Validation.notEmpty(children))
+            if (Validation.notEmpty(children)) {
                 arr.push(...children);
+            }
         });
-        if (delChildren)
+        if (delChildren) {
             delete root[childKey];
+        }
         return arr;
     }
     /**
@@ -1154,6 +1187,45 @@ class Arrays {
     static validateIndex(element) {
         return 0 <= element.index;
     }
+}
+
+class BError extends Error {
+    constructor(e) {
+        const msg = BError.isError(e) ? e.message : e;
+        super(msg);
+        this.name = 'BError';
+    }
+    /**
+     * 包装为错误对象
+     * @param e 错误信息或错误对象
+     */
+    static from(e) {
+        return this.isError(e) ? e : new BError(e);
+    }
+    /**
+     * 判断一个对象是否为Error实例
+     * @param e 目标对象
+     */
+    static isError(e) {
+        return Validation.is(e, 'Error');
+    }
+    /**
+     * 如果条件为false, 抛出异常
+     * @param c 条件
+     * @param [msg] 错误消息
+     * @throws 条件为假时
+     */
+    static iff = (c, msg) => {
+        if (!c)
+            this.throwError(msg);
+    };
+    /**
+     * 抛出异常
+     * @param [e] 错误消息或错误对象
+     */
+    static throwError = (e) => {
+        throw this.from(e);
+    };
 }
 
 /**
@@ -1194,8 +1266,9 @@ class PropChains {
         let val = arr;
         // jstAPI.common.eachValue(idxes, function (v) {
         Arrays.foreach(idxes, (v) => {
-            if (Validation.isNot(val, 'Array'))
+            if (Validation.isNot(val, 'Array')) {
                 return false;
+            }
             val = val[parseInt((v + '').replace('[', '').replace(']', ''))];
         });
         return val;
@@ -1206,15 +1279,17 @@ class PropChains {
      * @param ognl ognl表达式
      */
     static getValue(data, ognl) {
-        if (Validation.nullOrUndefined(data))
+        if (Validation.nullOrUndefined(data)) {
             return null;
+        }
         ognl = ognl.trim();
         const keys = ognl.split('.');
         if (1 === keys.length) {
             // 非数组
             const regex = /\[/;
-            if (!regex.test(ognl))
+            if (!regex.test(ognl)) {
                 return data ? data[ognl] : data;
+            }
             return PropChains.getArrOgnlVal(data, ognl);
         }
         const idx = ognl.indexOf('.');
@@ -1224,9 +1299,13 @@ class PropChains {
         const newOgnl = ognl.substring(idx + 1);
         return PropChains.getValue(valObj, newOgnl);
     }
+    static setValue(o, propChain, v) {
+        // return v;
+        BError.throwError('[Unsupported] 计划中暂未实现');
+        return v;
+    }
 }
 
-// 常规通用工具
 class Jsons {
     /**
      * 浅层合并两个对象
@@ -1282,8 +1361,9 @@ class Jsons {
      * @param handler 返回false停止后续, 否则直到结束
      */
     static foreach(o, handler) {
-        if (Validation.nullOrUndefined(o))
+        if (Validation.nullOrUndefined(o)) {
             return;
+        }
         Arrays.foreach(Object.keys(o), el => {
             return handler({ item: o[el.item], index: el.item });
         });
@@ -1307,22 +1387,21 @@ class Jsons {
      */
     static computeIfAbsent(store, key, fp) {
         // 数组
-        if (Validation.is(store, 'Array')) {
-            const arr = Cast.as(store);
-            const arrIndex = Cast.as(key);
-            let el = arr[arrIndex];
-            if (Validation.isNullOrUndefined(el)) {
-                el = (fp instanceof Function) ? fp(store, key) : fp;
-                arr.splice(arrIndex, 0, el);
+        if (Validation.is(store, 'Array') && store instanceof Array) {
+            const val = this.get(store, key);
+            if (Validation.notNil(val)) {
+                return val;
             }
-            return el;
+            const newlyVal = Functions.execOrGetter(fp, store, key);
+            Jsons.set(store, key, newlyVal);
+            return newlyVal;
         }
         if (key in store) {
             return store[key];
         }
-        const val = (fp instanceof Function) ? fp(store, key) : fp;
-        store[key] = val;
-        return val;
+        const newlyVal = Functions.execOrGetter(fp, store, key);
+        Jsons.set(store, key, newlyVal);
+        return newlyVal;
     }
     /**
      * 对象紧凑处理
@@ -1335,8 +1414,9 @@ class Jsons {
      * @return 数据对象克隆对象
      */
     static compact(data, recursion = false, nullable = false, emptyStr = false, emptyObj = false, emptyArray = false) {
-        if (!data)
+        if (!data) {
             return data;
+        }
         const delKey = (o, k) => {
             if (Validation.is(o, 'Object')) {
                 delete o[k];
@@ -1393,6 +1473,15 @@ class Jsons {
         return PropChains.getValue(o, String(propChain));
     }
     /**
+     * 设置属性值
+     * @param o 目标对象
+     * @param propChain 属性链
+     * @param v 值
+     */
+    static set(o, propChain, v) {
+        return PropChains.setValue(o, String(propChain), v);
+    }
+    /**
      * 对象属性平铺
      * @param src 目标对象
      * @param convert 转换函数
@@ -1401,50 +1490,21 @@ class Jsons {
     static flat(src, convert) {
         const results = [];
         this.foreach(src, iter => {
-            const result = convert(Cast.as(iter));
+            const result = convert(iter);
             results.push(result);
         });
         return results;
     }
-}
-
-class BError extends Error {
-    constructor(e) {
-        const msg = BError.isError(e) ? e.message : e;
-        super(msg);
-        this.name = 'BError';
+    /**
+     * 清空对象所有属性
+     * @param o 目标对象
+     */
+    static clear(o) {
+        this.foreach(o, iter => {
+            o[iter.index] = undefined;
+        });
+        return o;
     }
-    /**
-     * 包装为错误对象
-     * @param e 错误信息或错误对象
-     */
-    static from(e) {
-        return this.isError(e) ? e : new BError(e);
-    }
-    /**
-     * 判断一个对象是否为Error实例
-     * @param e 目标对象
-     */
-    static isError(e) {
-        return Validation.is(e, 'Error');
-    }
-    /**
-     * 如果条件为false, 抛出异常
-     * @param c 条件
-     * @param [msg] 错误消息
-     * @throws 条件为假时
-     */
-    static iff = (c, msg) => {
-        if (!c)
-            this.throwError(msg);
-    };
-    /**
-     * 抛出异常
-     * @param [e] 错误消息或错误对象
-     */
-    static throwError = (e) => {
-        throw this.from(e);
-    };
 }
 
 /**
@@ -1552,24 +1612,28 @@ class AsyncArrayStream {
      */
     next() {
         return Functions.execOrAsyncGetter(() => {
-            if (this.isOver)
+            if (this.isOver) {
                 return Promise.reject('数据已经处理完成');
+            }
             // 首次调用前
             if (this.cursor === 0) {
                 this.isOver = (false === Functions.call(this.events.begin, this));
-                if (this.isOver)
+                if (this.isOver) {
                     return;
+                }
             }
             // 空数组
             const elements = this.elements || [];
             if (0 === elements.length) {
-                const backupGetter = Functions.call(this.events.empty, this);
-                if (Validation.isNullOrUndefined(backupGetter)) {
+                const valOfSecond = Functions.execOrAsyncGetter(this.events.empty, this);
+                if (Validation.isNil(valOfSecond)) {
                     this.isOver = true;
                     return;
                 }
                 else {
-                    return this.init(Cast.as(backupGetter));
+                    this.reset();
+                    this.array$ = valOfSecond;
+                    return this.next();
                 }
             }
             // 递归结束
@@ -1618,19 +1682,27 @@ class AsyncArrayStream {
      * @param arrayGetter 数据或数据获取函数
      */
     init(arrayGetter) {
+        this.reset();
+        this.array$ = Functions.execOrAsyncGetter(arrayGetter);
+        return this.await();
+    }
+    /**
+     * 重置为初始化状态
+     * @private
+     */
+    reset() {
         this.cursor = 0;
         this.isOver = false;
         this.result = undefined;
-        this.array$ = Functions.execOrAsyncGetter(arrayGetter);
-        return this.await();
     }
     /**
      * 等待数据返回
      * @private
      */
     await() {
-        if (this.waitPromise)
+        if (this.waitPromise) {
             this.waitPromise.abort();
+        }
         this.waitPromise = Promises.control(this.array$
             .then((data) => {
             this.elements = data;
@@ -1662,13 +1734,37 @@ class AsyncArrayStream {
      * @private
      */
     callDelegateResult() {
-        const result = { result: this.result, broken: this.brokenInfo, brokenType: this.brokenType };
+        const result = {
+            result: this.result,
+            broken: this.brokenInfo,
+            brokenType: this.brokenType
+        };
         Functions.call(this.delegateResult, result);
         this.delegateResult = undefined;
     }
 }
 
 class Validation {
+    /**
+     * @deprecated
+     * 校验单个值是否为null/undefined
+     * @param v 目标值
+     * @returns true-目标值是null/undefined, false-目标值不是null/undefined
+     * @see isNil
+     */
+    static isNullOrUndefined(v) {
+        return this.isNil(v);
+    }
+    /**
+     * @deprecated
+     * 校验指定值是否已定义(非null/undefined)
+     * @param v 目标值
+     * @returns true-值已定义, false-值未定义
+     * @see notNil
+     */
+    static notNullOrUndefined(v) {
+        return !this.notNil(v);
+    }
     /**
      * 校验一系列值是否为不可用的值(null/undefined)
      * @param vs 值列表
@@ -1687,7 +1783,7 @@ class Validation {
      * @param v 目标值
      * @returns true-目标值是null/undefined, false-目标值不是null/undefined
      */
-    static isNullOrUndefined(v) {
+    static isNil(v) {
         return null === v || undefined === v;
     }
     /**
@@ -1695,8 +1791,8 @@ class Validation {
      * @param v 目标值
      * @returns true-值已定义, false-值未定义
      */
-    static notNullOrUndefined(v) {
-        return !this.isNullOrUndefined(v);
+    static notNil(v) {
+        return !this.isNil(v);
     }
     /**
      * 校验目标值是否真值
@@ -1732,9 +1828,11 @@ class Validation {
     static isOr(v, type, ...types) {
         types = types || [];
         types.push(type);
-        for (const t of types)
-            if (this.is(v, t))
+        for (const t of types) {
+            if (this.is(v, t)) {
                 return true;
+            }
+        }
         return false;
     }
     /**
@@ -2342,51 +2440,33 @@ class Storages {
     static $local = Storages.$(localStorage);
 }
 
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
 /**
  * @example
- * // 先决条件
- * // yarn add vuex
- * // yarn add vuex-class
- *
- * // @file: store/mod/user.ts
- * // 定义通用状态类
- * import {
- *   ActionTree, GetterTree, Module, MutationTree,
- * } from 'vuex';
- * import { StoreTools, types } from '@hyong8023/tool-box';
- *
- * function getDefaultState() {
- *   return {
- *     token: '',
- *   };
- * }
- *
- * const state = getDefaultState();
- * type T = typeof state;
- *
- * class UserStore implements Module<T, any> {
- *   namespaced = true;
- *   state = state;
- *   mutations: MutationTree<T> = { ...StoreTools.generateMutations(state) };
- *   actions: ActionTree<T, any> = { ...StoreTools.generateActions(state) };
- *   getters: GetterTree<T, any> = { ...StoreTools.generateGetters(state) };
- * }
- *
- * export type User = T;
- * export type UserModKey = types.KeyOfOnly<User>;
- * export const user = new UserStore();
- *
- *
- * // @file: store/index.ts
- * // 注册到vuex
- * import { createStore } from 'vuex';
- * import system from '@/store/mod/user';
- *
- * export default createStore({
- *   modules: {
- *     user,
- *   },
- * });
+ * # 依赖条件
+ * $ yarn add vuex
+ * $ yarn add vuex-class
  */
 class StoreTools {
     /**
@@ -2431,7 +2511,113 @@ class StoreTools {
         });
         return result;
     }
+    /**
+     * 生成Vuex实例
+     *
+     * @example
+     * // ----------------------------
+     * // file: store/mod/sys.ts
+     * // ----------------------------
+     * // 生成 Vuex.Module 规范对象
+     * let sys = StoreTools.generate({
+     *   token: '',
+     *   resetTokenAction: null,
+     * }, true, 'sys');
+     * // 添加额外逻辑
+     * sys = {
+     *   ...sys,
+     *   mutations: {
+     *     ...sys.mutations,
+     *     resetTokenAction: (state) => Jsons.clear(state)
+     *   },
+     *   actions: { ...sys.actions },
+     *   getters: { ...sys.getters },
+     * };
+     * // 导出类型
+     * export type SysT = ReturnType<typeof sys.__state_type__>;
+     * export type SysP = ReturnType<typeof sys.__state_type_key__>;
+     * // 导出对象
+     * export { sys };
+     *
+     *
+     * // ----------------------------
+     * // file: store/index.ts
+     * // ----------------------------
+     *  export default createStore({
+     *    modules: {
+     *      [sys.__name__]: sys,
+     *    },
+     *  });
+     *
+     * @param og 状态对象或状态对象获取函数
+     * @param [namespaced=true] 是否使用命名空间隔离
+     * @param [name] 命名空间名称
+     */
+    static generate(og, namespaced = true, name = 'store') {
+        const defaultState = Functions.execOrGetter(og);
+        let state = { ...defaultState };
+        return {
+            namespaced: namespaced,
+            get state() {
+                return state;
+            },
+            mutations: { ...StoreTools.generateMutations(state) },
+            actions: { ...StoreTools.generateActions(state) },
+            getters: { ...StoreTools.generateGetters(state) },
+            __reset__() {
+                state = { ...defaultState };
+            },
+            __state_type__: Builders.getterSelf,
+            __state_type_key__: Builders.getterSelf,
+            __name__: name,
+        };
+    }
+    /**
+     * 给 BindingHelpers 添加参数类型提示
+     * @param namespaced vuex.modules 注册的名称
+     * @see namespace
+     * @see namespaceX
+     */
+    static namespaceT(namespaced) {
+        return Cast.as(namespace(namespaced));
+    }
+    /**
+     * 从 Vuex.Module 实体获取命名空间注册名称, 并返回带类型 BindingHelpers。
+     *
+     * @example
+     * // ----------------------------
+     * // file: store/mod.ts
+     * // ----------------------------
+     * export class mod {
+     *   // 手动指定类型
+     *   static readonly sysMan = StoreTools.namespaceT<SysS>('sys');
+     *   // 推导类型
+     *   static readonly sysInfer = StoreTools.namespaceX(sys);
+     * }
+     *
+     *
+     * // ----------------------------
+     * // file: views/System.vue
+     * // ----------------------------
+     * import { Vue } from 'vue-class-component';
+     * export default System extends Vue {
+     *   // 参数类型为 ReturnType<typeof sys.__state_type_key__>
+     *   \@mod.sysMan.Getter('token') tokenMan!:string;
+     *   // 参数类型为 ReturnType<typeof sysInfer.__state_type_key__>
+     *   \@mod.sysInfer.Action('token') tokenInfer!:fns.Consume<string>;
+     * }
+     *
+     * @function
+     * @see StoreTools.generate
+     */
+    static namespaceX = Cast.nil;
 }
+__decorate([
+    Decorators.proxy((thisArg, pmp, args) => {
+        const store = args[0];
+        return StoreTools.namespaceT(store.__name__);
+    })
+], StoreTools, "namespaceX", void 0);
 
 class Broadcast {
     /**

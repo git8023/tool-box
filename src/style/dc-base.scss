@@ -1,13 +1,18 @@
-* {margin:0; padding:0; resize:none; list-style:none; box-sizing:border-box; /*transition:all .3s;*/}
-
-.border-debug {&,& * {border:1px solid #f00;}}
-
+// dc: Document-Common style
+* {margin:0; padding:0; resize:none; list-style:none; box-sizing:border-box; /*transition:all .3s;*/
+}
+.border-debug {
+  &, & * {border:1px solid #f00;}
+}
+//
+// flex
+//
 .dc-flex-col {display:flex; flex-direction:column;}
 .dc-flex-row {display:flex; flex-direction:row;}
 .dc-flex-center {align-items:center;}
 .dc-flex-avg,
 .dc-flex-1,
-.dc-flex-other_only{flex:1;}
+.dc-flex-other_only {flex:1;}
 .dc-flex-2 {flex:2;}
 .dc-flex-3 {flex:3;}
 .dc-flex-4 {flex:4;}
@@ -20,72 +25,88 @@
 .dc-flex-11 {flex:11;}
 .dc-flex-12 {flex:12;}
 .dc-flex-none {flex:none;}
-
 .dc-text-left {text-align:left;}
 .dc-text-center {text-align:center;}
 .dc-text-right {text-align:right;}
-
 .dc-margin-center {margin-left:auto; margin-right:auto;}
-
 .dc-block {display:block;}
 .dc-block-background {background:#eee;}
 .dc-inline-block {display:inline-block;}
-
 .dc-background-main {background:#fff;}
 .dc-background-second {background:#eee;}
-
+//
+// box
+//
 .dc-box-padding,
 .dc-box-padding-1x {padding:8px;}
 .dc-box-padding-2x {padding:16px;}
 .dc-box-padding-3x {padding:24px;}
-
 .dc-box-margin,
 .dc-box-margin-1x {margin:8px;}
 .dc-box-margin-2x {margin:16px;}
 .dc-box-margin-3x {margin:24px;}
-
+//
+// gap
+//
 .dc-gap,
 .dc-gap-1x {margin:8px;}
 .dc-gap-2x {margin:16px;}
 .dc-gap-3x {margin:24px;}
-
 .dc-gap-left,
 .dc-gap-left-1x {margin-left:8px;}
 .dc-gap-left-2x {margin-left:16px;}
 .dc-gap-left-3x {margin-left:24px;}
-
 .dc-gap-right,
 .dc-gap-right-1x {margin-right:8px;}
 .dc-gap-right-2x {margin-right:16px;}
 .dc-gap-right-3x {margin-right:24px;}
-
 .dc-gap-top,
 .dc-gap-top-1x {margin-top:8px;}
 .dc-gap-top-2x {margin-top:16px;}
 .dc-gap-top-3x {margin-top:24px;}
-
 .dc-gap-bottom,
 .dc-gap-bottom-1x {margin-bottom:8px;}
 .dc-gap-bottom-2x {margin-bottom:16px;}
 .dc-gap-bottom-3x {margin-bottom:24px;}
-
+//
+// position
+//
 .dc-pos-absolute {position:absolute;}
 .dc-pos-relative {position:relative;}
 .dc-pos-fixed {position:fixed;}
-
+//
+// full box
+//
 .dc-full {width:100%; height:100%;}
 .dc-full-width {width:100%;}
 .dc-full-height {height:100%;}
 .dc-full-window {width:100vw; height:100vh;}
-
+//
+// overflow
+//
 .dc-overflow-hidden {overflow:hidden;}
 .dc-overflow-auto {overflow:auto;}
 .dc-overflow-auto-x {overflow-x:auto;}
 .dc-overflow-auto-x_only {overflow-x:auto;overflow-y:hidden;}
 .dc-overflow-auto-y {overflow-y:auto;}
 .dc-overflow-auto-y_only {overflow-y:auto; overflow-x:hidden}
-
+//
+// grid
+//
+.grid {display:grid;
+  &_2x2 {@extend .grid; grid-template-columns: 50% 50%; grid-template-rows: 50% 50%;}
+  &_r2 {@extend .grid; grid-template-rows: 50% 50%;
+    &.gap_1rem {grid-template-rows:repeat(2, calc(50% - .5rem)); grid-row-gap:1rem;}
+  }
+  &_c2 {@extend .grid; grid-template-columns:repeat(2, 50%);
+    &.gap_1rem {
+      @extend .grid_c2; grid-template-columns:repeat(2, calc(50% - .5rem)); grid-column-gap:1rem;
+    }
+  }
+}
+//
+// other
+//
 .dc-border-none {border:none;}
 .dc-reference {border-left:5px solid #aaa; padding:8px 16px; background:#eee; color:#333;}
-
 
