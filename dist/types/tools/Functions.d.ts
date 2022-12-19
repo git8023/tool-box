@@ -3,10 +3,18 @@ export declare class Functions {
     /**
      * 调用函数
      * @param fn 函数引用，如果要指定上下文需要传递Lambda函数
-     * @param [args] 请求参数
+     * @param [args] 参数
      * @return 函数返回值
      */
     static call<R, T = void>(fn?: fns.HandlerT9<R, T, any, any, any, any, any, any, any, any>, ...args: any[]): R | undefined;
+    /**
+     * 调用函数
+     * @param fn 函数引用，如果要指定上下文需要传递Lambda函数
+     * @param [thisArg=undefined] 执行上下文
+     * @param [args] 参数
+     * @return 函数返回值
+     */
+    static exec<R, T = void>(fn?: fns.HandlerT9<R, T, any, any, any, any, any, any, any, any>, thisArg?: any, ...args: any[]): R | undefined;
     /**
      * 执行数据获取函数
      * @param vog 数据或数据获取函数

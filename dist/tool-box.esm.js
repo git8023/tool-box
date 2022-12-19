@@ -463,11 +463,22 @@ class Functions {
     /**
      * 调用函数
      * @param fn 函数引用，如果要指定上下文需要传递Lambda函数
-     * @param [args] 请求参数
+     * @param [args] 参数
      * @return 函数返回值
      */
     static call(fn, ...args) {
-        return (fn && Validation.isFunction(fn)) ? Cast.as(fn).call(undefined, ...args) : undefined;
+        // return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, ...args) : undefined;
+        return this.exec(fn, undefined, ...args);
+    }
+    /**
+     * 调用函数
+     * @param fn 函数引用，如果要指定上下文需要传递Lambda函数
+     * @param [thisArg=undefined] 执行上下文
+     * @param [args] 参数
+     * @return 函数返回值
+     */
+    static exec(fn, thisArg, ...args) {
+        return (fn && Validation.isFunction(fn)) ? Cast.as(fn).call(thisArg, ...args) : undefined;
     }
     /**
      * 执行数据获取函数
@@ -483,8 +494,9 @@ class Functions {
      * @param [args] 函数执行参数
      */
     static execOrAsyncGetter(oag, ...args) {
-        if (oag instanceof Promise)
+        if (oag instanceof Promise) {
             return oag;
+        }
         const data = this.execOrGetter(oag, ...args);
         return Promises.from(data);
     }
@@ -499,8 +511,9 @@ class Functions {
     static timer(call, loop = false, lazy = 0, immediate = false, ...args) {
         if (immediate) {
             Functions.call(call, ...args);
-            if (!loop)
+            if (!loop) {
                 return;
+            }
         }
         setTimeout(() => {
             Promises.of(() => call(...args)).then(() => {
@@ -1232,6 +1245,18 @@ class BError extends Error {
  * 属性链工具
  */
 class PropChains {
+    /**原始属性链*/
+    origin;
+    /**当前层级*/
+    hierarchy;
+    /**期望类型*/
+    expectType;
+    /**当前节点属性名*/
+    prop;
+    /**值*/
+    value;
+    /**下个节点*/
+    next;
     /**
      * 获取数组对象的值
      * @param data 数据对象
@@ -1299,10 +1324,132 @@ class PropChains {
         const newOgnl = ognl.substring(idx + 1);
         return PropChains.getValue(valObj, newOgnl);
     }
+    /**
+     * 设置对象属性值
+     * @param o 数据对象
+     * @param propChain 属性链
+     * @param v 值
+     */
     static setValue(o, propChain, v) {
-        // return v;
-        BError.throwError('[Unsupported] 计划中暂未实现');
-        return v;
+        if (Validation.isNil(o)) {
+            return Cast.nil;
+        }
+        return PropChains.parse(propChain).setValue(o, v);
+    }
+    /**
+     * 解析ognl表达式
+     * @param chain 属性链表达式
+     * @param [hierarchy=0] 属性层级, 外部调用不传
+     */
+    static parse(chain, hierarchy = 0) {
+        const propChains = new PropChains();
+        propChains.origin = chain;
+        propChains.hierarchy = hierarchy;
+        let validOk = !chain.startsWith('.'); // 不能以.开头
+        validOk = validOk && /^\D/.test(chain); // 不能以数字开头
+        BError.iff(validOk, '属性链无效');
+        // 提取：Array
+        if (chain.startsWith('[')) {
+            const arrIdx = chain.match(/^\[(.+)]/);
+            propChains.prop = +arrIdx[1];
+            BError.iff(Validation.is(propChains.prop, 'Number'), `索引无效: ${chain}, 期望类型 Number`);
+            propChains.expectType = 'array';
+            // 截取已消费节点
+            const nextStartIndex = chain.indexOf(']');
+            const surplus = chain.substring(nextStartIndex + 1);
+            if (surplus) {
+                const chainSurplus = surplus.replace(/^\./, '');
+                propChains.next = PropChains.parse(chainSurplus, hierarchy + 1);
+            }
+            return propChains;
+        }
+        // 提取: Object
+        const omr = chain.match(/^(.+)[.[]/) || [undefined, chain];
+        propChains.prop = omr[1];
+        propChains.expectType = propChains.prop.includes('[') ? 'array' : 'object';
+        const surplus = chain.substring(propChains.prop.length);
+        if (surplus) {
+            const chainSurplus = surplus.replace(/^\./, '');
+            propChains.next = PropChains.parse(chainSurplus, hierarchy + 1);
+        }
+        return propChains;
+    }
+    /**
+     * 设置每个层级对应值
+     * @param o 对象
+     * @param v 值
+     * @private
+     */
+    setValue(o, v) {
+        const to = o;
+        const val = to[this.prop];
+        const originValType = Object.prototype.toString.call(val);
+        // 只有一层属性
+        if (!this.next) {
+            switch (this.expectType) {
+                case 'array':
+                    BError.iff(Validation.is(o, 'Array'), `但类型错误. 期望[Array]实际[${originValType}]`);
+                    break;
+                case 'object':
+                    BError.iff(Validation.is(o, 'Object'), `但类型错误. 期望[Object]实际[${originValType}]`);
+                    break;
+            }
+            this.value = to[this.prop] = v;
+            return this.value;
+        }
+        // 多层属性
+        const hasVal = Validation.notNil(val);
+        switch (this.expectType) {
+            case 'array': {
+                // if (hasVal) {
+                //   BError.iff(
+                //     Validation.is(this.value, 'Array'),
+                //     `目标属性已存在, 但类型错误. 期望[Array]实际[${originValType}]`,
+                //   );
+                //   return v;
+                // }
+                // e.g: foo[0]
+                const sp = String(this.prop).split('[');
+                if (sp.length === 2) {
+                    this.value = to[this.prop] = to[this.prop] ?? [];
+                    if (this.next) {
+                        const index = parseInt(sp[1]);
+                        this.value = this.value[index] = (this.next.expectType === 'object' ? {} : []);
+                    }
+                }
+                // e.g: foo[0][1]
+                else if (sp.length > 2) {
+                    const arrProp = sp[0];
+                    let arrTmp = to[arrProp] = to[arrProp] ?? [];
+                    const lastArrIndex = parseInt(sp.pop());
+                    for (let i = 1; i < sp.length; i++) {
+                        const index = parseInt(sp[i]);
+                        const oldVal = arrTmp[index];
+                        if (Validation.notNil(oldVal)) {
+                            BError.iff(Validation.is(oldVal, 'Array'), `数据[${this.prop}]类型错误, 期望[[object Array]]实际[${Object.prototype.toString.call(oldVal)}]`);
+                        }
+                        arrTmp[index] = oldVal ?? [];
+                        arrTmp = arrTmp[index];
+                    }
+                    if (this.next) {
+                        this.value = arrTmp[lastArrIndex] = (this.next.expectType === 'object' ? {} : []);
+                    }
+                }
+                else {
+                    this.value = to[this.prop] = [];
+                }
+                break;
+            }
+            case 'object':
+                if (hasVal) {
+                    BError.iff(Validation.is(o, 'Object'), `目标属性已存在, 但类型错误. 期望[Object]实际[${originValType}]`);
+                }
+                else {
+                    this.value = to[this.prop] = {};
+                }
+                break;
+        }
+        return this.next.setValue(this.value, v);
     }
 }
 
@@ -2216,11 +2363,13 @@ class Events {
     static debounceController(interrupt, duration = 300) {
         return createDecorator((target, fnKey) => {
             const originFn = target.methods[fnKey];
-            if (!(originFn instanceof Function))
+            if (!(originFn instanceof Function)) {
                 throw new Error(`[Events.debounceController] 目标属性不是可执行函数: ${fnKey}`);
+            }
             const interrupter = target.methods[interrupt];
-            if (!(interrupter instanceof Function))
+            if (!(interrupter instanceof Function)) {
                 throw new Error(`[Events.debounceController] 中断函数无效, 指定属性不是可执行函数: ${String(interrupt)}`);
+            }
             let originFnTimer;
             target.methods[fnKey] = function (...args) {
                 Logs.info(`[Events.debounceController] 函数[${fnKey}]延迟执行 ${duration} ms`);
@@ -2245,11 +2394,13 @@ class Events {
                 const filename = String(vm.__file).split('/').pop();
                 const vmClsName = String(filename).split('.')[0];
                 const prefix = `[${vmClsName}.${fnKey}]`;
-                if (params)
+                if (params) {
                     Logs.debug(prefix, ' Parameters: ', args);
+                }
                 const data = fn(...args);
-                if (returns && Validation.notNullOrUndefined(data))
+                if (returns && Validation.notNullOrUndefined(data)) {
                     Logs.debug(prefix, ' Returns: ', data);
+                }
                 return data;
             };
         });
@@ -2291,27 +2442,28 @@ class Events {
             const fn = options.methods[key];
             options.methods[key] = function (...args) {
                 observe = observe.bind(this);
-                const obsBR = observe({ stage: 'before', args: args });
-                if (beforeBroken && obsBR === false)
+                const obsBR = observe({ stage: 'before', args: args, thisArg: this });
+                if (beforeBroken && obsBR === false) {
                     return;
+                }
                 try {
                     const data = fn.bind(this)(...args);
                     if (Validation.is(data, 'Promise')) {
                         return data
                             .then((data$) => {
-                            const obsAR = observe({ stage: 'after', data: data$ });
+                            const obsAR = observe({ stage: 'after', data: data$, thisArg: this });
                             return useResult ? obsAR : data$;
                         })
                             .catch((e) => {
-                            observe({ stage: 'error', error: e });
+                            observe({ stage: 'error', error: e, thisArg: this });
                             return Promise.reject(e);
                         });
                     }
-                    const obsAR = observe({ stage: 'after', data });
+                    const obsAR = observe({ stage: 'after', data, thisArg: this });
                     return useResult ? obsAR : data;
                 }
                 catch (e) {
-                    return observe({ stage: 'after', error: e });
+                    return observe({ stage: 'after', error: e, thisArg: this });
                 }
             };
         });
@@ -2322,18 +2474,17 @@ class Events {
      * @see observe
      */
     static observeRun(points) {
-        return this.observe(function ({ stage }) {
+        return this.observe(function ({ stage, thisArg }) {
             // @ts-ignore
             const ctx = this;
             switch (stage) {
                 case 'before':
-                    return Functions.call(Jsons.get(ctx, points.before));
+                    return Functions.exec(Jsons.get(ctx, points.before), thisArg);
                 case 'after':
-                    Functions.call(Jsons.get(ctx, points.after));
+                    Functions.exec(Jsons.get(ctx, points.after), thisArg);
                     return;
                 case 'error':
-                    Functions.call(Jsons.get(ctx, points.catcher));
-                    Functions.call(Jsons.get(ctx, points.final));
+                    Functions.exec(Jsons.get(ctx, points.catcher), thisArg);
                     break;
                 default:
                     Logs.warn(`[Events] 未处理状态: ${stage}`);

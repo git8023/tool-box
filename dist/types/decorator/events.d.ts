@@ -39,6 +39,7 @@ export declare class Events {
         args?: any[];
         data?: R;
         error?: any;
+        thisArg?: any;
     }, boolean | void>, beforeBroken?: boolean, useResult?: boolean): import("vue-class-component").VueDecorator;
     /**
      * 观察者
@@ -49,7 +50,6 @@ export declare class Events {
         before?: keyof T;
         after?: keyof T;
         catcher?: keyof T;
-        final?: keyof T;
     }): import("vue-class-component").VueDecorator;
     /**
      * 闪烁指定属性. 执行前熄灭执行后亮起.

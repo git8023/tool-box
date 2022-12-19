@@ -22,7 +22,7 @@ export class Events {
    */
   static debouncer<C>(
     duration = 100,
-    debounceProp?: keyof C
+    debounceProp?: keyof C,
   ) {
     Logs.info('[Events.debouncer] Execute debouncer');
     return createDecorator((
@@ -56,19 +56,21 @@ export class Events {
    */
   static debounceController<T extends Record<K, Function>, K extends keyof T>(
     interrupt: K,
-    duration = 300
+    duration = 300,
   ) {
     return createDecorator((
       target,
-      fnKey
+      fnKey,
     ) => {
       const originFn = target.methods[fnKey];
-      if (!(originFn instanceof Function))
+      if (!(originFn instanceof Function)) {
         throw new Error(`[Events.debounceController] 目标属性不是可执行函数: ${fnKey}`);
+      }
 
       const interrupter = target.methods[interrupt];
-      if (!(interrupter instanceof Function))
+      if (!(interrupter instanceof Function)) {
         throw new Error(`[Events.debounceController] 中断函数无效, 指定属性不是可执行函数: ${String(interrupt)}`);
+      }
 
       let originFnTimer: any;
       target.methods[fnKey] = function (...args: any[]) {
@@ -77,7 +79,8 @@ export class Events {
       };
 
       target.methods[interrupt] = function (...args: any[]) {
-        Logs.info(`[Events.debounceController] 函数[${fnKey}]执行被[${String(interrupt)}]中断, 执行函数[${String(interrupt)}]`);
+        Logs.info(`[Events.debounceController] 函数[${fnKey}]执行被[${String(interrupt)}]中断, 执行函数[${String(
+          interrupt)}]`);
         clearTimeout(originFnTimer);
         interrupter.bind(this)(...args);
       };
@@ -91,12 +94,12 @@ export class Events {
    */
   static log(
     params = true,
-    returns = true
+    returns = true,
   ) {
 
     return createDecorator((
       vm,
-      fnKey
+      fnKey,
     ) => {
 
       const fn = vm.methods[fnKey];
@@ -105,11 +108,14 @@ export class Events {
         const filename = String(vm.__file).split('/').pop();
         const vmClsName = String(filename).split('.')[0];
         const prefix = `[${vmClsName}.${fnKey}]`;
-        if (params) Logs.debug(prefix, ' Parameters: ', args);
+        if (params) {
+          Logs.debug(prefix, ' Parameters: ', args);
+        }
 
         const data = fn(...args);
-        if (returns && Validation.notNullOrUndefined(data))
+        if (returns && Validation.notNullOrUndefined(data)) {
           Logs.debug(prefix, ' Returns: ', data);
+        }
 
         return data;
       };
@@ -126,7 +132,7 @@ export class Events {
   static lazy<T>(
     predicate: fns.Handler<T, boolean>,
     lazy = 10,
-    interval?: number
+    interval?: number,
   ) {
 
     lazy = (0 < lazy) ? lazy : 10;
@@ -135,7 +141,7 @@ export class Events {
 
     return createDecorator((
       options,
-      fnKey
+      fnKey,
     ) => {
 
       const fn = options.methods[fnKey];
@@ -163,22 +169,23 @@ export class Events {
    * @param [useResult=false] 是否使用观察结果
    */
   static observe<R = any>(
-    observe: fns.Handler<{ stage: 'before' | 'after' | 'error', args?: any[], data?: R, error?: any }, boolean | void>,
+    observe: fns.Handler<{ stage: 'before' | 'after' | 'error', args?: any[], data?: R, error?: any, thisArg?: any }, boolean | void>,
     beforeBroken = true,
     useResult = false,
   ) {
     return createDecorator((
       options,
-      key
+      key,
     ) => {
 
       const fn = options.methods[key];
       options.methods[key] = function (...args: any[]) {
         observe = observe.bind(this);
 
-        const obsBR = observe({ stage: 'before', args: args });
-        if (beforeBroken && obsBR === false)
+        const obsBR = observe({ stage: 'before', args: args, thisArg: this });
+        if (beforeBroken && obsBR === false) {
           return;
+        }
 
         try {
           const data = fn.bind(this)(...args);
@@ -186,19 +193,19 @@ export class Events {
           if (Validation.is(data, 'Promise')) {
             return data
               .then((data$: any) => {
-                const obsAR = observe({ stage: 'after', data: data$ });
+                const obsAR = observe({ stage: 'after', data: data$, thisArg: this });
                 return useResult ? obsAR : data$;
               })
               .catch((e: any) => {
-                observe({ stage: 'error', error: e });
+                observe({ stage: 'error', error: e, thisArg: this });
                 return Promise.reject(e);
               });
           }
 
-          const obsAR = observe({ stage: 'after', data });
+          const obsAR = observe({ stage: 'after', data, thisArg: this });
           return useResult ? obsAR : data;
         } catch (e) {
-          return observe({ stage: 'after', error: e });
+          return observe({ stage: 'after', error: e, thisArg: this });
         }
 
       };
@@ -216,23 +223,21 @@ export class Events {
       before?: keyof T,
       after?: keyof T,
       catcher?: keyof T,
-      final?: keyof T,
-    }
+    },
   ) {
-    return this.observe(function ({ stage }) {
+    return this.observe(function ({ stage, thisArg }) {
       // @ts-ignore
       const ctx: T = this;
       let data: any;
       const hasErr = false;
       switch (stage) {
         case 'before':
-          return Functions.call(Jsons.get(ctx, points.before!) as any);
+          return Functions.exec(Jsons.get(ctx, points.before!) as any, thisArg);
         case 'after':
-          Functions.call(Jsons.get(ctx, points.after!) as any);
+          Functions.exec(Jsons.get(ctx, points.after!) as any, thisArg);
           return;
         case 'error':
-          data = Functions.call(Jsons.get(ctx, points.catcher!) as any);
-          Functions.call(Jsons.get(ctx, points.final!) as any);
+          data = Functions.exec(Jsons.get(ctx, points.catcher!) as any, thisArg);
           break;
         default:
           Logs.warn(`[Events] 未处理状态: ${stage}`);
@@ -248,11 +253,11 @@ export class Events {
    */
   static blink<T, P extends keyof T = keyof T>(
     blinkProp: P,
-    duration = 10
+    duration = 10,
   ) {
     return createDecorator((
       options,
-      key
+      key,
     ) => {
 
       const fn = options.methods[key];
