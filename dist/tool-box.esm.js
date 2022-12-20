@@ -1345,8 +1345,8 @@ class PropChains {
         const propChains = new PropChains();
         propChains.origin = chain;
         propChains.hierarchy = hierarchy;
-        let validOk = !chain.startsWith('.'); // 不能以.开头
-        validOk = validOk && /^\D/.test(chain); // 不能以数字开头
+        const validOk = !chain.startsWith('.'); // 不能以.开头
+        // validOk = validOk && /^\D/.test(chain); // 不能以数字开头
         BError.iff(validOk, '属性链无效');
         // 提取：Array
         if (chain.startsWith('[')) {
@@ -2850,4 +2850,4 @@ class Documents {
     }
 }
 
-export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Delete, Documents, Events, Filter, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Post, Promises, PropChains, Put, Request, Storages, StoreTools, Strings, Switcher, Validation };
+export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Decorators, Delete, Documents, Events, Filter, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Post, Promises, PropChains, Put, Request, Storages, StoreTools, Strings, Switcher, Validation };

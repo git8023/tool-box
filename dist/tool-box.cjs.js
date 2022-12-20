@@ -1347,8 +1347,8 @@ class PropChains {
         const propChains = new PropChains();
         propChains.origin = chain;
         propChains.hierarchy = hierarchy;
-        let validOk = !chain.startsWith('.'); // 不能以.开头
-        validOk = validOk && /^\D/.test(chain); // 不能以数字开头
+        const validOk = !chain.startsWith('.'); // 不能以.开头
+        // validOk = validOk && /^\D/.test(chain); // 不能以数字开头
         BError.iff(validOk, '属性链无效');
         // 提取：Array
         if (chain.startsWith('[')) {
@@ -2863,6 +2863,7 @@ exports.ConsoleLogger = ConsoleLogger;
 exports.DataPool = DataPool;
 exports.DataPoolKey = DataPoolKey;
 exports.Dates = Dates;
+exports.Decorators = Decorators;
 exports.Delete = Delete;
 exports.Documents = Documents;
 exports.Events = Events;

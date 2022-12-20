@@ -2,6 +2,7 @@ export { Get, Put, Post, Delete, Filter, Request } from './decorator/http-reques
 export { DataPool, DataPoolKey } from './decorator/data-pool';
 export { Events } from './decorator/events';
 export { Observer } from './decorator/observer';
+export { Decorators, ProxyMethodParameter } from './decorator/decorators';
 export { Arrays } from './tools/Arrays';
 export { AsyncArrayStream, asi } from './tools/AsyncArrayStream';
 export { Builders } from './tools/Builders';
