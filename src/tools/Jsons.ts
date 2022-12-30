@@ -18,7 +18,7 @@ export class Jsons {
   static merge<T extends object>(
     src: T,
     dest: T,
-    recover = true
+    recover = true,
   ): string[] {
     const repeatedKeys = this.extractRepeatKeys<T>(src, dest);
     if (repeatedKeys.length) {
@@ -60,7 +60,7 @@ export class Jsons {
    * @returns 拷贝后对象
    */
   static simpleClone<T>(
-    o: T
+    o: T,
   ): T {
     if (Validation.isNullOrUndefined(o)) {
       // @ts-ignore
@@ -70,13 +70,13 @@ export class Jsons {
   }
 
   /**
-   * 遍历对象属性
-   * @param o 对象
-   * @param handler 返回false停止后续, 否则直到结束
+   * 便利对象属性
+   * @param o 目标对象
+   * @param handler 迭代处理器
    */
-  static foreach<T extends { [s in K]: P }, K extends keyof T, P extends T[K]>(
+  static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
     o: T,
-    handler: fns.ObjectIteratorHandler<P>
+    handler: fns.ObjectIteratorHandler<P>,
   ) {
     if (Validation.nullOrUndefined(o)) {
       return;
@@ -94,7 +94,7 @@ export class Jsons {
    */
   static cover<T extends object>(
     src: any = {},
-    dist: T = Cast.as<any>({})
+    dist: T = Cast.as<any>({}),
   ): T {
     this.foreach(dist, el => {
       dist[el.index as keyof T] = src[el.index] ?? el.item;
@@ -114,8 +114,8 @@ export class Jsons {
     key: K,
     fp: R | ((
       store: T,
-      key: string | keyof T
-    ) => R)
+      key: string | keyof T,
+    ) => R),
   ): R {
 
     // 数组
@@ -155,7 +155,7 @@ export class Jsons {
     nullable = false,
     emptyStr = false,
     emptyObj = false,
-    emptyArray = false
+    emptyArray = false,
   ): T {
     if (!data) {
       return data;
@@ -163,7 +163,7 @@ export class Jsons {
 
     const delKey = (
       o: any,
-      k: string | number
+      k: string | number,
     ) => {
       if (Validation.is(o, 'Object')) {
         delete o[k];
@@ -222,7 +222,7 @@ export class Jsons {
    */
   static get<R, T = any>(
     o: T,
-    propChain: (keyof T) | string
+    propChain: (keyof T) | string,
   ): R {
     return PropChains.getValue(o, String(propChain));
   }
@@ -236,7 +236,7 @@ export class Jsons {
   static set<R, T = any>(
     o: T,
     propChain: (keyof T) | string,
-    v: R
+    v: R,
   ): R {
     return PropChains.setValue(o, String(propChain), v);
   }
@@ -249,7 +249,7 @@ export class Jsons {
    */
   static flat<T extends { [s in K]: P }, K extends keyof T, P extends T[K], R = any>(
     src: T,
-    convert: fns.ObjectIteratorHandler<P, R>
+    convert: fns.ObjectIteratorHandler<P, R>,
   ): R[] {
     const results: R[] = [];
     this.foreach(src, iter => {

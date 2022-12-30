@@ -61,7 +61,7 @@ Jsons.computeIfAbsent(data, 'address.province', 'YunNan');
 
 ## 简化模板代码
 
-### Axios([http-request](./src/decorator/http-request.md))
+### Axios
 
 ```ts
 // http-request.ts 提供的装饰器简化axios模板代码

@@ -22,13 +22,13 @@ export declare class Jsons {
      */
     static simpleClone<T>(o: T): T;
     /**
-     * 遍历对象属性
-     * @param o 对象
-     * @param handler 返回false停止后续, 否则直到结束
+     * 便利对象属性
+     * @param o 目标对象
+     * @param handler 迭代处理器
      */
     static foreach<T extends {
-        [s in K]: P;
-    }, K extends keyof T, P extends T[K]>(o: T, handler: fns.ObjectIteratorHandler<P>): void;
+        [S in K]: T[S];
+    }, K extends keyof T = keyof T, P extends T[K] = T[K]>(o: T, handler: fns.ObjectIteratorHandler<P>): void;
     /**
      * 把src浅克隆到dist中
      * @param src 数据对象

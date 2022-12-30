@@ -1503,9 +1503,9 @@ class Jsons {
         return JSON.parse(JSON.stringify(o));
     }
     /**
-     * 遍历对象属性
-     * @param o 对象
-     * @param handler 返回false停止后续, 否则直到结束
+     * 便利对象属性
+     * @param o 目标对象
+     * @param handler 迭代处理器
      */
     static foreach(o, handler) {
         if (Validation.nullOrUndefined(o)) {
