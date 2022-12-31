@@ -1244,6 +1244,243 @@ class BError extends Error {
 }
 
 /**
+ * 数组异步迭代器
+ */
+class AsyncArrayStream {
+    /**
+     * 游标
+     * @private
+     */
+    cursor = 0;
+    /**
+     * 事件
+     * @private
+     */
+    events = {};
+    /**
+     * 目标数据异步获取器
+     * @private
+     */
+    array$;
+    /**
+     * 最终获取的数据
+     * @private
+     */
+    elements;
+    /**
+     * 最终处理结果
+     * @private
+     */
+    result;
+    /**
+     * 是否已经结束
+     * @private
+     */
+    isOver = false;
+    /**
+     * 中断信息
+     * @private
+     */
+    brokenInfo;
+    /**
+     * 中断类型
+     * @private
+     */
+    brokenType;
+    /**
+     * 结果委托
+     * @private
+     */
+    delegateResult;
+    /**
+     * 等待处理结果的Promise
+     * @private
+     */
+    waitPromise;
+    /**
+     * 将一个数组(或数据获取函数)包装为异步处理
+     * @param arrayGetter 目标数组
+     */
+    constructor(arrayGetter) {
+        this.init(arrayGetter);
+    }
+    /**
+     * 将一个数组(或数据获取函数)包装为异步处理
+     * @param array 目标数组
+     */
+    static from(array) {
+        return new AsyncArrayStream(array);
+    }
+    /**
+     * 监听开始处理元素前事件
+     * @param handler 事件处理器
+     */
+    onBegin(handler) {
+        this.events.begin = handler;
+        return this;
+    }
+    /**
+     * 监听节点事件
+     * @param handler 事件处理器
+     */
+    onElement(handler) {
+        this.events.element = handler;
+        return this;
+    }
+    /**
+     * 如果目标数组是空或无效时
+     * @param handler 事件处理器
+     */
+    onEmpty(handler) {
+        this.events.empty = handler;
+        return this;
+    }
+    /**
+     * 处理完成
+     * @param handler 事件处理器
+     */
+    onDone(handler) {
+        this.events.done = handler;
+        return this;
+    }
+    /**
+     * 获取下一个元素
+     */
+    next() {
+        return Functions.execOrAsyncGetter(() => {
+            if (this.isOver) {
+                return Promise.reject('数据已经处理完成');
+            }
+            // 首次调用前
+            if (this.cursor === 0) {
+                this.isOver = (false === Functions.call(this.events.begin, this));
+                if (this.isOver) {
+                    return;
+                }
+            }
+            // 空数组
+            const elements = this.elements || [];
+            if (0 === elements.length) {
+                const valOfSecond = Functions.execOrAsyncGetter(this.events.empty, this);
+                if (Validation.isNil(valOfSecond)) {
+                    this.isOver = true;
+                    return;
+                }
+                else {
+                    this.reset();
+                    this.array$ = valOfSecond;
+                    return this.next();
+                }
+            }
+            // 递归结束
+            if (this.cursor === elements.length) {
+                return;
+            }
+            // 遍历每个元素
+            const item = elements[this.cursor];
+            const itemData = {
+                index: this.cursor++,
+                item,
+                self: this,
+                broken: this.broken.bind(this)
+            };
+            const itemHandleResult = Functions.call(this.events.element, itemData);
+            return Functions
+                .execOrAsyncGetter(itemHandleResult)
+                .then((itemResult) => {
+                if (itemResult === false) {
+                    Logs.debug(`元素迭代返回结果:[${itemResult}], 是否终止后续处理:[${!itemResult}]`, itemData);
+                    this.broken({ ...itemData, self: undefined }, 'ELEMENT_ITERATOR_HANDLE:FALSE');
+                    return;
+                }
+                return this.next();
+            });
+        });
+    }
+    /**
+     * 手动中断
+     * @param brokenData 终端携带的数据
+     * @param [type='MANUAL'] 中断类型
+     */
+    broken(brokenData, type = 'MANUAL') {
+        this.isOver = true;
+        this.brokenInfo = brokenData;
+        this.brokenType = type;
+    }
+    /**
+     * 获取最终处理结果, 如果结果中包含 broken 表示处理被中断
+     */
+    getResult() {
+        return new Promise((resolve) => this.delegateResult = resolve);
+    }
+    /**
+     * 初始化
+     * @param arrayGetter 数据或数据获取函数
+     */
+    init(arrayGetter) {
+        this.reset();
+        this.array$ = Functions.execOrAsyncGetter(arrayGetter);
+        return this.await();
+    }
+    /**
+     * 重置为初始化状态
+     * @private
+     */
+    reset() {
+        this.cursor = 0;
+        this.isOver = false;
+        this.result = undefined;
+    }
+    /**
+     * 等待数据返回
+     * @private
+     */
+    await() {
+        if (this.waitPromise) {
+            this.waitPromise.abort();
+        }
+        this.waitPromise = Promises.control(this.array$
+            .then((data) => {
+            this.elements = data;
+            return this.next();
+        })
+            .then(() => {
+            this.result = Functions.call(this.events.done, this);
+            this.events.done = undefined;
+            this.callDelegateResult();
+        })
+            .catch((e) => {
+            this.catch(e);
+        }));
+        return this.waitPromise;
+    }
+    /**
+     * 捕获异常中断
+     * @param error 异常信息
+     * @private
+     */
+    catch(error) {
+        const args = { self: this, error: BError.from(error) };
+        this.result = Functions.call(this.events.error, args);
+        this.broken(error);
+        this.callDelegateResult();
+    }
+    /**
+     * 执行结果委托函数
+     * @private
+     */
+    callDelegateResult() {
+        const result = {
+            result: this.result,
+            broken: this.brokenInfo,
+            brokenType: this.brokenType
+        };
+        Functions.call(this.delegateResult, result);
+        this.delegateResult = undefined;
+    }
+}
+
+/**
  * 属性链工具
  */
 class PropChains {
@@ -1508,14 +1745,38 @@ class Jsons {
      * 便利对象属性
      * @param o 目标对象
      * @param handler 迭代处理器
+     * @param [sync=true] 同步处理
      */
-    static foreach(o, handler) {
+    static foreach(o, handler, sync = true) {
         if (Validation.nullOrUndefined(o)) {
             return;
         }
-        Arrays.foreach(Object.keys(o), el => {
-            return handler({ item: o[el.item], index: el.item });
-        });
+        // 同步处理
+        const keys = Object.keys(o);
+        if (sync) {
+            Arrays.foreach(keys, el => {
+                return handler({ item: o[el.item], index: el.item });
+            });
+            return;
+        }
+        // 异步处理
+        return AsyncArrayStream
+            .from(keys)
+            .onElement((iter) => {
+            const hr = handler({ item: o[iter.item], index: iter.item });
+            if (hr instanceof Promise) {
+                hr.then(iter.self.next.bind(iter.self)).catch(iter.self.broken.bind(iter.self));
+                return;
+            }
+            if (hr === false) {
+                iter.self.broken(undefined, 'ELEMENT_ITERATOR_HANDLE:FALSE');
+            }
+            else {
+                iter.self.next().then();
+            }
+        })
+            .onDone(Builders.getterSelf(o))
+            .getResult();
     }
     /**
      * 把src浅克隆到dist中
@@ -1653,243 +1914,6 @@ class Jsons {
             o[iter.index] = undefined;
         });
         return o;
-    }
-}
-
-/**
- * 数组异步迭代器
- */
-class AsyncArrayStream {
-    /**
-     * 游标
-     * @private
-     */
-    cursor = 0;
-    /**
-     * 事件
-     * @private
-     */
-    events = {};
-    /**
-     * 目标数据异步获取器
-     * @private
-     */
-    array$;
-    /**
-     * 最终获取的数据
-     * @private
-     */
-    elements;
-    /**
-     * 最终处理结果
-     * @private
-     */
-    result;
-    /**
-     * 是否已经结束
-     * @private
-     */
-    isOver = false;
-    /**
-     * 中断信息
-     * @private
-     */
-    brokenInfo;
-    /**
-     * 中断类型
-     * @private
-     */
-    brokenType;
-    /**
-     * 结果委托
-     * @private
-     */
-    delegateResult;
-    /**
-     * 等待处理结果的Promise
-     * @private
-     */
-    waitPromise;
-    /**
-     * 将一个数组(或数据获取函数)包装为异步处理
-     * @param arrayGetter 目标数组
-     */
-    constructor(arrayGetter) {
-        this.init(arrayGetter);
-    }
-    /**
-     * 将一个数组(或数据获取函数)包装为异步处理
-     * @param array 目标数组
-     */
-    static from(array) {
-        return new AsyncArrayStream(array);
-    }
-    /**
-     * 监听开始处理元素前事件
-     * @param handler 事件处理器
-     */
-    onBegin(handler) {
-        this.events.begin = handler;
-        return this;
-    }
-    /**
-     * 监听节点事件
-     * @param handler 事件处理器
-     */
-    onElement(handler) {
-        this.events.element = handler;
-        return this;
-    }
-    /**
-     * 如果目标数组是空或无效时
-     * @param handler 事件处理器
-     */
-    onEmpty(handler) {
-        this.events.empty = handler;
-        return this;
-    }
-    /**
-     * 处理完成
-     * @param handler 事件处理器
-     */
-    onDone(handler) {
-        this.events.done = handler;
-        return this;
-    }
-    /**
-     * 获取下一个元素
-     */
-    next() {
-        return Functions.execOrAsyncGetter(() => {
-            if (this.isOver) {
-                return Promise.reject('数据已经处理完成');
-            }
-            // 首次调用前
-            if (this.cursor === 0) {
-                this.isOver = (false === Functions.call(this.events.begin, this));
-                if (this.isOver) {
-                    return;
-                }
-            }
-            // 空数组
-            const elements = this.elements || [];
-            if (0 === elements.length) {
-                const valOfSecond = Functions.execOrAsyncGetter(this.events.empty, this);
-                if (Validation.isNil(valOfSecond)) {
-                    this.isOver = true;
-                    return;
-                }
-                else {
-                    this.reset();
-                    this.array$ = valOfSecond;
-                    return this.next();
-                }
-            }
-            // 递归结束
-            if (this.cursor === elements.length) {
-                return;
-            }
-            // 遍历每个元素
-            const item = elements[this.cursor];
-            const itemData = {
-                index: this.cursor++,
-                item,
-                self: this,
-                broken: this.broken.bind(this)
-            };
-            const itemHandleResult = Functions.call(this.events.element, itemData);
-            return Functions
-                .execOrAsyncGetter(itemHandleResult)
-                .then((itemResult) => {
-                if (!itemResult) {
-                    Logs.debug(`元素迭代返回结果:[${itemResult}], 是否终止后续处理:[${!itemResult}]`, itemData);
-                    this.broken({ ...itemData, self: undefined }, 'ELEMENT_ITERATOR_HANDLE:FALSE');
-                    return;
-                }
-                return this.next();
-            });
-        });
-    }
-    /**
-     * 手动中断
-     * @param brokenData 终端携带的数据
-     * @param [type='MANUAL'] 中断类型
-     */
-    broken(brokenData, type = 'MANUAL') {
-        this.isOver = true;
-        this.brokenInfo = brokenData;
-        this.brokenType = type;
-    }
-    /**
-     * 获取最终处理结果, 如果结果中包含 broken 表示处理被中断
-     */
-    getResult() {
-        return new Promise((resolve) => this.delegateResult = resolve);
-    }
-    /**
-     * 初始化
-     * @param arrayGetter 数据或数据获取函数
-     */
-    init(arrayGetter) {
-        this.reset();
-        this.array$ = Functions.execOrAsyncGetter(arrayGetter);
-        return this.await();
-    }
-    /**
-     * 重置为初始化状态
-     * @private
-     */
-    reset() {
-        this.cursor = 0;
-        this.isOver = false;
-        this.result = undefined;
-    }
-    /**
-     * 等待数据返回
-     * @private
-     */
-    await() {
-        if (this.waitPromise) {
-            this.waitPromise.abort();
-        }
-        this.waitPromise = Promises.control(this.array$
-            .then((data) => {
-            this.elements = data;
-            return this.next();
-        })
-            .then(() => {
-            this.result = Functions.call(this.events.done, this);
-            this.events.done = undefined;
-            this.callDelegateResult();
-        })
-            .catch((e) => {
-            this.catch(e);
-        }));
-        return this.waitPromise;
-    }
-    /**
-     * 捕获异常中断
-     * @param error 异常信息
-     * @private
-     */
-    catch(error) {
-        const args = { self: this, error: BError.from(error) };
-        this.result = Functions.call(this.events.error, args);
-        this.broken(error);
-        this.callDelegateResult();
-    }
-    /**
-     * 执行结果委托函数
-     * @private
-     */
-    callDelegateResult() {
-        const result = {
-            result: this.result,
-            broken: this.brokenInfo,
-            brokenType: this.brokenType
-        };
-        Functions.call(this.delegateResult, result);
-        this.delegateResult = undefined;
     }
 }
 

@@ -1,4 +1,5 @@
 import { fns } from '../types/fns';
+import { types } from '../types/types';
 export declare class Jsons {
     /**
      * 浅层合并两个对象
@@ -29,6 +30,15 @@ export declare class Jsons {
     static foreach<T extends {
         [S in K]: T[S];
     }, K extends keyof T = keyof T, P extends T[K] = T[K]>(o: T, handler: fns.ObjectIteratorHandler<P>): void;
+    /**
+     * 便利对象属性
+     * @param o 目标对象
+     * @param handler 迭代处理器
+     * @param sync 异步处理
+     */
+    static foreach<T extends {
+        [S in K]: T[S];
+    }, K extends keyof T = keyof T, P extends T[K] = T[K]>(o: T, handler: fns.ObjectIteratorHandler<P, types.FalsyLike | Promise<types.FalsyLike>>, sync: false): Promise<T>;
     /**
      * 把src浅克隆到dist中
      * @param src 数据对象

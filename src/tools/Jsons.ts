@@ -1,5 +1,8 @@
 import { fns } from '../types/fns';
+import { types } from '../types/types';
 import { Arrays } from './Arrays';
+import { AsyncArrayStream } from './AsyncArrayStream';
+import { Builders } from './Builders';
 import { Cast } from './Cast';
 import { Functions } from './Functions';
 import { PropChains } from './PropChains';
@@ -77,14 +80,62 @@ export class Jsons {
   static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
     o: T,
     handler: fns.ObjectIteratorHandler<P>,
+  ): void;
+
+  /**
+   * 便利对象属性
+   * @param o 目标对象
+   * @param handler 迭代处理器
+   * @param sync 异步处理
+   */
+  static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
+    o: T,
+    handler: fns.ObjectIteratorHandler<P, types.FalsyLike | Promise<types.FalsyLike>>,
+    sync: false,
+  ): Promise<T>
+
+  /**
+   * 便利对象属性
+   * @param o 目标对象
+   * @param handler 迭代处理器
+   * @param [sync=true] 同步处理
+   */
+  static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
+    o: T,
+    handler: fns.ObjectIteratorHandler<P, types.FalsyLike | Promise<types.FalsyLike>>,
+    sync = true,
   ) {
     if (Validation.nullOrUndefined(o)) {
       return;
     }
 
-    Arrays.foreach(Object.keys(o), el => {
-      return handler({ item: o[el.item as keyof T], index: el.item });
-    });
+    // 同步处理
+    const keys = Object.keys(o);
+    if (sync) {
+      Arrays.foreach(keys, el => {
+        return handler({ item: o[el.item as keyof T], index: el.item }) as types.FalsyLike;
+      });
+      return;
+    }
+
+    // 异步处理
+    return AsyncArrayStream
+      .from(keys)
+      .onElement((iter) => {
+        const hr = handler({ item: o[iter.item as keyof T], index: iter.item });
+        if (hr instanceof Promise) {
+          hr.then(iter.self.next.bind(iter.self)).catch(iter.self.broken.bind(iter.self));
+          return;
+        }
+
+        if (hr === false) {
+          iter.self.broken(undefined, 'ELEMENT_ITERATOR_HANDLE:FALSE');
+        } else {
+          iter.self.next().then();
+        }
+      })
+      .onDone(Builders.getterSelf(o))
+      .getResult();
   }
 
   /**

@@ -17,7 +17,7 @@ export namespace asi {
   /**
    * 元素事件数据
    */
-  export  type ElementEventData<T, R> = {
+  export type ElementEventData<T, R> = {
 
     /**
      * 数据项
@@ -246,7 +246,7 @@ export class AsyncArrayStream<T, R = any> {
       return Functions
         .execOrAsyncGetter(itemHandleResult)
         .then((itemResult) => {
-          if (!itemResult) {
+          if (itemResult === false) {
             Logs.debug(`元素迭代返回结果:[${itemResult}], 是否终止后续处理:[${!itemResult}]`, itemData);
             this.broken({ ...itemData, self: undefined }, 'ELEMENT_ITERATOR_HANDLE:FALSE');
             return;
