@@ -211,7 +211,7 @@ export class Dates {
       return format;
     }
 
-    if (Validation.isNullOrUndefined(date))
+    if (Validation.isNil(date))
       return '';
 
     if (Validation.is(date, 'Number'))

@@ -7,35 +7,13 @@ import { Cast } from './Cast';
 export class Validation {
 
   /**
-   * @deprecated
-   * 校验单个值是否为null/undefined
-   * @param v 目标值
-   * @returns true-目标值是null/undefined, false-目标值不是null/undefined
-   * @see isNil
-   */
-  static isNullOrUndefined(v: any): boolean {
-    return this.isNil(v);
-  }
-
-  /**
-   * @deprecated
-   * 校验指定值是否已定义(非null/undefined)
-   * @param v 目标值
-   * @returns true-值已定义, false-值未定义
-   * @see notNil
-   */
-  static notNullOrUndefined(v: any): boolean {
-    return !this.notNil(v);
-  }
-
-  /**
    * 校验一系列值是否为不可用的值(null/undefined)
    * @param vs 值列表
    * @returns true-全部都是null/undefined, false-当找到至少一个不是null/undefined
    */
   static nullOrUndefined(...vs: any[]): boolean {
     for (const vsKey in vs) {
-      if (!this.isNullOrUndefined(vs[vsKey])) {
+      if (!this.isNil(vs[vsKey])) {
         return false;
       }
     }
@@ -130,7 +108,7 @@ export class Validation {
    * @param o 被校验对象
    */
   static isEmpty<T>(o: T): boolean {
-    if (this.isNullOrUndefined(o)) {
+    if (this.isNil(o)) {
       return true;
     }
 
@@ -182,7 +160,7 @@ export class Validation {
       return true;
     }
 
-    if (this.isNullOrUndefined(a) && this.isNullOrUndefined(b)) {
+    if (this.isNil(a) && this.isNil(b)) {
       return true;
     }
 

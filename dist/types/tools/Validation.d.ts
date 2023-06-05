@@ -2,22 +2,6 @@ import { types } from '../types/types';
 import { fns } from '../types/fns';
 export declare class Validation {
     /**
-     * @deprecated
-     * 校验单个值是否为null/undefined
-     * @param v 目标值
-     * @returns true-目标值是null/undefined, false-目标值不是null/undefined
-     * @see isNil
-     */
-    static isNullOrUndefined(v: any): boolean;
-    /**
-     * @deprecated
-     * 校验指定值是否已定义(非null/undefined)
-     * @param v 目标值
-     * @returns true-值已定义, false-值未定义
-     * @see notNil
-     */
-    static notNullOrUndefined(v: any): boolean;
-    /**
      * 校验一系列值是否为不可用的值(null/undefined)
      * @param vs 值列表
      * @returns true-全部都是null/undefined, false-当找到至少一个不是null/undefined

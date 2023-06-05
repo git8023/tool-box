@@ -42,7 +42,7 @@ export class Storages {
       },
       get<T>(key: string): T {
         const v = storage.getItem(key);
-        return Validation.isNullOrUndefined(v) ? null : JSON.parse(v as string);
+        return Validation.isNil(v) ? null : JSON.parse(v as string);
       },
       remove<T>(key: string): T {
         const v = that.get<T>(key);

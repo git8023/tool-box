@@ -35,7 +35,7 @@ export namespace fns {
    *
    * @see HandlerT9
    */
-  export interface HandlerT9C<R = void, C = void, T1 = void, T2 = void, T3 = void, T4 = void, T5 = void, T6 = void, T7 = void, T8 = void, T9 = void> extends Handler<T1, R> {
+  export interface HandlerT9C<R = void, C = void, T1 = void, T2 = void, T3 = void, T4 = void, T5 = void, T6 = void, T7 = void, T8 = void, T9 = void> {
     (
       this: C,
       p1: T1,

@@ -246,7 +246,7 @@ class Dates {
             }
             return format;
         }
-        if (Validation.isNullOrUndefined(date))
+        if (Validation.isNil(date))
             return '';
         if (Validation.is(date, 'Number'))
             date = new Date(date);
@@ -467,7 +467,6 @@ class Functions {
      * @return 函数返回值
      */
     static call(fn, ...args) {
-        // return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, ...args) : undefined;
         return this.exec(fn, undefined, ...args);
     }
     /**
@@ -1721,7 +1720,7 @@ class Jsons {
             return [];
         }
         vsR.forEach(value => {
-            if (Validation.notNullOrUndefined(value)) {
+            if (Validation.notNil(value)) {
                 keysArr.push(Object.keys(value));
             }
         });
@@ -1733,14 +1732,14 @@ class Jsons {
      * @returns 拷贝后对象
      */
     static simpleClone(o) {
-        if (Validation.isNullOrUndefined(o)) {
+        if (Validation.isNil(o)) {
             // @ts-ignore
             return null;
         }
         return JSON.parse(JSON.stringify(o));
     }
     /**
-     * 便利对象属性
+     * 遍历对象属性
      * @param o 目标对象
      * @param handler 迭代处理器
      * @param [sync=true] 同步处理
@@ -1835,7 +1834,7 @@ class Jsons {
         };
         this.foreach(data, el => {
             if (Validation.isEmpty(el.item)) {
-                if (Validation.isNullOrUndefined(el.item) && !nullable) {
+                if (Validation.isNil(el.item) && !nullable) {
                     delKey(data, el.index);
                     return;
                 }
@@ -1917,33 +1916,13 @@ class Jsons {
 
 class Validation {
     /**
-     * @deprecated
-     * 校验单个值是否为null/undefined
-     * @param v 目标值
-     * @returns true-目标值是null/undefined, false-目标值不是null/undefined
-     * @see isNil
-     */
-    static isNullOrUndefined(v) {
-        return this.isNil(v);
-    }
-    /**
-     * @deprecated
-     * 校验指定值是否已定义(非null/undefined)
-     * @param v 目标值
-     * @returns true-值已定义, false-值未定义
-     * @see notNil
-     */
-    static notNullOrUndefined(v) {
-        return !this.notNil(v);
-    }
-    /**
      * 校验一系列值是否为不可用的值(null/undefined)
      * @param vs 值列表
      * @returns true-全部都是null/undefined, false-当找到至少一个不是null/undefined
      */
     static nullOrUndefined(...vs) {
         for (const vsKey in vs) {
-            if (!this.isNullOrUndefined(vs[vsKey])) {
+            if (!this.isNil(vs[vsKey])) {
                 return false;
             }
         }
@@ -2020,7 +1999,7 @@ class Validation {
      * @param o 被校验对象
      */
     static isEmpty(o) {
-        if (this.isNullOrUndefined(o)) {
+        if (this.isNil(o)) {
             return true;
         }
         if (this.isOr(o, 'Array', 'String')) {
@@ -2062,7 +2041,7 @@ class Validation {
         if (a === b) {
             return true;
         }
-        if (this.isNullOrUndefined(a) && this.isNullOrUndefined(b)) {
+        if (this.isNil(a) && this.isNil(b)) {
             return true;
         }
         // other
@@ -2234,7 +2213,7 @@ const setPathVariable = (uri, args) => {
     return uri.replaceAll(/({[^/]+})/g, (varUnit) => {
         const varName = varUnit.match(/{(.+)}/)[1];
         const varVal = pathVariables[varName];
-        if (Validation.isNullOrUndefined(varVal))
+        if (Validation.isNil(varVal))
             Logs.error(`缺少路径变量[${varName}]配置`);
         return String(varVal);
     });
@@ -2294,7 +2273,7 @@ class Strings {
         if (Validation.isNot(s, 'String')) {
             return false;
         }
-        if (Validation.isNullOrUndefined(s)) {
+        if (Validation.isNil(s)) {
             return true;
         }
         if (useTrim) {
@@ -2322,7 +2301,7 @@ class Strings {
      * @param s 源字符串
      */
     static trimToEmpty(s) {
-        if (Validation.isNullOrUndefined(s))
+        if (Validation.isNil(s))
             return '';
         return s.toString().trim();
     }
@@ -2422,7 +2401,7 @@ class Events {
                     Logs.debug(prefix, ' Parameters: ', args);
                 }
                 const data = fn(...args);
-                if (returns && Validation.notNullOrUndefined(data)) {
+                if (returns && Validation.notNil(data)) {
                     Logs.debug(prefix, ' Returns: ', data);
                 }
                 return data;
@@ -2596,7 +2575,7 @@ class Storages {
             },
             get(key) {
                 const v = storage.getItem(key);
-                return Validation.isNullOrUndefined(v) ? null : JSON.parse(v);
+                return Validation.isNil(v) ? null : JSON.parse(v);
             },
             remove(key) {
                 const v = that.get(key);
@@ -2874,4 +2853,132 @@ class Documents {
     }
 }
 
-export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Decorators, Delete, Documents, Events, Filter, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Post, Promises, PropChains, Put, Request, Storages, StoreTools, Strings, Switcher, Validation };
+class Reflections {
+    static watchers = Symbol('watchers');
+    static values = Symbol('values');
+    static watched = Symbol('watched');
+    /**
+     * 观察对象指定属性, 可多次观察
+     * @param o 目标对象
+     * @param prop 已有属性或新增属性
+     * @param watcher 观察者, 相同观察者只能注册一次
+     * @return 被观察对象
+     */
+    static watch(o, prop, watcher) {
+        // 定义监听器映射
+        const [watchersMapper] = this.constValue(o, Reflections.watchers, {});
+        // 保存监听器
+        watchersMapper[prop] = watchersMapper[prop] || [];
+        const watchers = watchersMapper[prop];
+        if (!watchers.includes(watcher)) {
+            watchers.push(watcher);
+        }
+        // 值缓存
+        const [values, isFirstSet] = this.constValue(o, Reflections.values, {});
+        // 首次代理需要拷贝原有值
+        if (isFirstSet) {
+            Object.assign(values, o);
+        }
+        // 一个属性仅观察一次
+        const [watchedMapper] = this.constValue(o, Reflections.watched, {});
+        if (Reflect.has(watchedMapper, prop)) {
+            return o;
+        }
+        // 观察属性
+        const descriptor = Reflect.getOwnPropertyDescriptor(o, prop) ?? {
+            configurable: true,
+            enumerable: true,
+        };
+        Reflect.defineProperty(o, prop, {
+            configurable: descriptor.configurable,
+            enumerable: descriptor.enumerable,
+            get: () => values[prop],
+            set: (nv) => {
+                const ov = values[prop];
+                values[prop] = nv;
+                watchers.forEach((watcher) => {
+                    try {
+                        watcher(nv, ov);
+                    }
+                    catch (e) {
+                        console.warn(`观察者[${String(prop)}]执行错误`, e, watcher);
+                    }
+                });
+            },
+        });
+        watchedMapper[prop] = true;
+        return o;
+    }
+    /**
+     * 设置常量属性
+     * @param o 目标对象
+     * @param prop 属性
+     * @param value 值
+     * @return [R, FirstSet]
+     */
+    static constValue(o, prop, value) {
+        value = o[prop] ?? value;
+        if (Reflect.has(o, prop)) {
+            return [value, false];
+        }
+        const isOk = Reflect.defineProperty(o, prop, {
+            value,
+            configurable: true,
+            enumerable: false,
+            writable: false,
+        });
+        if (!isOk) {
+            throw Error('属性代理失败');
+        }
+        return [value, true];
+    }
+}
+
+/** 挂起等待条件完成后执行 */
+class Pending {
+    asyncCall;
+    conditions;
+    awaits = Cast.anyO;
+    constructor(asyncCall, conditions) {
+        this.asyncCall = asyncCall;
+        this.conditions = conditions;
+        this.init();
+    }
+    /**
+     * 创建实例
+     * @param asyncCall 挂起结束回调
+     * @param conditions 条件设定(重复条件只保留一个)
+     */
+    static create(asyncCall, ...conditions) {
+        return new Pending(asyncCall, conditions ?? []);
+    }
+    /**
+     * 完成指定条件
+     * @param cKey 条件关键字
+     */
+    complete(cKey) {
+        Functions.call(this.awaits[cKey]);
+        return this;
+    }
+    /**
+     * 初始化
+     * @example
+     * await
+     *    .all:
+     *        each Promise(c)
+     *    .then:
+     *        call asyncCall
+     * @private
+     */
+    init() {
+        const awaits = [];
+        this.conditions.forEach((c) => {
+            awaits.push(new Promise((resolve) => {
+                this.awaits[c] = resolve;
+            }));
+        });
+        Promise.all(awaits).then(this.asyncCall);
+    }
+}
+
+export { Arrays, AsyncArrayStream, BError, Broadcast, Builders, Cast, Condition, ConsoleLogger, DataPool, DataPoolKey, Dates, Decorators, Delete, Documents, Events, Filter, Functions, Get, Jsons, LogLevel, Logics, Logs, Objects, Observer, Pending, Post, Promises, PropChains, Put, Reflections, Request, Storages, StoreTools, Strings, Switcher, Validation };

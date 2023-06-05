@@ -2,7 +2,7 @@ export { Get, Put, Post, Delete, Filter, Request } from './decorator/http-reques
 export { DataPool, DataPoolKey } from './decorator/data-pool';
 export { Events } from './decorator/events';
 export { Observer } from './decorator/observer';
-export { Decorators, ProxyMethodParameter } from './decorator/decorators';
+export { Decorators } from './decorator/decorators';
 export { Arrays } from './tools/Arrays';
 export { AsyncArrayStream, asi } from './tools/AsyncArrayStream';
 export { Builders } from './tools/Builders';
@@ -22,6 +22,8 @@ export { Validation } from './tools/Validation';
 export { StoreTools } from './tools/StoreTools';
 export { Broadcast } from './tools/Broadcast';
 export { Documents } from './tools/Documents';
+export { Reflections } from './tools/Reflections';
+export { Pending } from './tools/Pending';
 export { fns } from './types/fns';
 export { types, vuex } from './types/types';
 export { vmsNet } from './types/vms-net';

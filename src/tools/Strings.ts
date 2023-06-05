@@ -55,7 +55,7 @@ export class Strings {
       return false;
     }
 
-    if (Validation.isNullOrUndefined(s)) {
+    if (Validation.isNil(s)) {
       return true;
     }
 
@@ -87,7 +87,7 @@ export class Strings {
    * @param s 源字符串
    */
   static trimToEmpty(s: string): string {
-    if (Validation.isNullOrUndefined(s))
+    if (Validation.isNil(s))
       return '';
     return s.toString().trim();
   }

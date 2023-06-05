@@ -62,6 +62,9 @@ export declare namespace types {
          */
         abort(): void;
     }
+    /**
+     * 类装饰器参数
+     */
     type DecoratorClassParameter<T = any> = {
         target: T;
     };
@@ -72,8 +75,20 @@ export declare namespace types {
         target: T;
         fnKey: string;
     };
-    type DecoratorPropParameter<T = any> = DecoratorMethodParameter<T> & {
-        desc: PropertyDescriptor;
+    /**
+     * 函数代理装饰器参数
+     */
+    type DecoratorProxyMethodParameter = {
+        /**目标对象*/
+        target: any;
+        /**目标函数属性名*/
+        key: string;
+        /**
+         * 属性值或函数, 未绑定到target
+         *
+         * vof: Value Or Function
+         */
+        vof: any;
     };
 }
 /**

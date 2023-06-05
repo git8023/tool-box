@@ -105,7 +105,7 @@ const setPathVariable = (
   return uri.replaceAll(/({[^/]+})/g, (varUnit) => {
     const varName = varUnit.match(/{(.+)}/)![1];
     const varVal = pathVariables[varName];
-    if (Validation.isNullOrUndefined(varVal))
+    if (Validation.isNil(varVal))
       Logs.error(`缺少路径变量[${varName}]配置`);
     return String(varVal);
   });

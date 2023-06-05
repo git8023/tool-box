@@ -86,6 +86,9 @@ export namespace types {
     abort(): void;
   }
 
+  /**
+   * 类装饰器参数
+   */
   export type DecoratorClassParameter<T = any> = {
     target: T
   }
@@ -98,8 +101,20 @@ export namespace types {
     fnKey: string
   }
 
-  export type DecoratorPropParameter<T = any> = DecoratorMethodParameter<T> & {
-    desc: PropertyDescriptor
+  /**
+   * 函数代理装饰器参数
+   */
+  export type DecoratorProxyMethodParameter = {
+    /**目标对象*/
+    target: any,
+    /**目标函数属性名*/
+    key: string,
+    /**
+     * 属性值或函数, 未绑定到target
+     *
+     * vof: Value Or Function
+     */
+    vof: any
   }
 }
 
@@ -119,19 +134,19 @@ export namespace vuex {
 
   export type MutationTree<T> = types.RecordS<(
     state: T,
-    payload?: any
+    payload?: any,
   ) => any>
 
   export type ActionTree<T, R = any> = types.RecordS<(
     ctx: ActionContext<T, R>,
-    payload?: any
+    payload?: any,
   ) => void>
 
   export type GetterTree<S, R = any> = types.RecordS<(
     state: S,
     getters: any,
     rootState: R,
-    rootGetters: any
+    rootGetters: any,
   ) => any>;
 
   export interface ModuleTree<R> {

@@ -27,7 +27,7 @@ export declare namespace fns {
      *
      * @see HandlerT9
      */
-    interface HandlerT9C<R = void, C = void, T1 = void, T2 = void, T3 = void, T4 = void, T5 = void, T6 = void, T7 = void, T8 = void, T9 = void> extends Handler<T1, R> {
+    interface HandlerT9C<R = void, C = void, T1 = void, T2 = void, T3 = void, T4 = void, T5 = void, T6 = void, T7 = void, T8 = void, T9 = void> {
         (this: C, p1: T1, p2: T2, p3: T3, p4: T4, p5: T5, p6: T6, p7: T7, p8: T8, p9: T9): R;
     }
     /**

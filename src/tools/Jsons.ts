@@ -1,7 +1,7 @@
 import { fns } from '../types/fns';
 import { types } from '../types/types';
 import { Arrays } from './Arrays';
-import { AsyncArrayStream } from './AsyncArrayStream';
+import { asi, AsyncArrayStream } from './AsyncArrayStream';
 import { Builders } from './Builders';
 import { Cast } from './Cast';
 import { Functions } from './Functions';
@@ -48,7 +48,7 @@ export class Jsons {
     }
 
     vsR.forEach(value => {
-      if (Validation.notNullOrUndefined(value)) {
+      if (Validation.notNil(value)) {
         keysArr.push(Object.keys(value as any));
       }
     });
@@ -65,7 +65,7 @@ export class Jsons {
   static simpleClone<T>(
     o: T,
   ): T {
-    if (Validation.isNullOrUndefined(o)) {
+    if (Validation.isNil(o)) {
       // @ts-ignore
       return <T>null;
     }
@@ -73,9 +73,15 @@ export class Jsons {
   }
 
   /**
-   * 便利对象属性
+   * 遍历对象属性
    * @param o 目标对象
    * @param handler 迭代处理器
+   * @example
+   * const obj = {foo:'foo' bar:1};
+   * Jsons.foreach(obj, ({item, index}) => {
+   *   // do something
+   *   return false;
+   * })
    */
   static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
     o: T,
@@ -83,19 +89,25 @@ export class Jsons {
   ): void;
 
   /**
-   * 便利对象属性
+   * 遍历对象属性
    * @param o 目标对象
    * @param handler 迭代处理器
    * @param sync 异步处理
+   * @example
+   * const obj = {foo:'foo' bar:1};
+   * Jsons.foreach(obj, ({item, index}) => {
+   *   // do something
+   *   return false || Promise.resole(false);
+   * }, false)
    */
   static foreach<T extends { [S in K]: T[S] }, K extends keyof T = keyof T, P extends T[K] = T[K]>(
     o: T,
     handler: fns.ObjectIteratorHandler<P, types.FalsyLike | Promise<types.FalsyLike>>,
     sync: false,
-  ): Promise<T>
+  ):  Promise<asi.ResultEventData<T>>
 
   /**
-   * 便利对象属性
+   * 遍历对象属性
    * @param o 目标对象
    * @param handler 迭代处理器
    * @param [sync=true] 同步处理
@@ -104,7 +116,7 @@ export class Jsons {
     o: T,
     handler: fns.ObjectIteratorHandler<P, types.FalsyLike | Promise<types.FalsyLike>>,
     sync = true,
-  ) {
+  ): void | Promise<asi.ResultEventData<T>> {
     if (Validation.nullOrUndefined(o)) {
       return;
     }
@@ -120,7 +132,7 @@ export class Jsons {
 
     // 异步处理
     return AsyncArrayStream
-      .from(keys)
+      .from<string, T>(keys)
       .onElement((iter) => {
         const hr = handler({ item: o[iter.item as keyof T], index: iter.item });
         if (hr instanceof Promise) {
@@ -225,7 +237,7 @@ export class Jsons {
 
     this.foreach(data, el => {
       if (Validation.isEmpty(el.item)) {
-        if (Validation.isNullOrUndefined(el.item) && !nullable) {
+        if (Validation.isNil(el.item) && !nullable) {
           delKey(data, el.index);
           return;
         }

@@ -113,7 +113,7 @@ export class Events {
         }
 
         const data = fn(...args);
-        if (returns && Validation.notNullOrUndefined(data)) {
+        if (returns && Validation.notNil(data)) {
           Logs.debug(prefix, ' Returns: ', data);
         }
 

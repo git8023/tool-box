@@ -15,7 +15,6 @@ export class Functions {
     fn?: fns.HandlerT9<R, T, any, any, any, any, any, any, any, any>,
     ...args: any[]
   ): R | undefined {
-    // return (fn && Validation.isFunction(fn)) ? Cast.as<Function>(fn).call(undefined, ...args) : undefined;
     return this.exec(fn, undefined, ...args);
   }
 
