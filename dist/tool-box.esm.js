@@ -2815,7 +2815,11 @@ class Broadcast {
      */
     off(channel, fn) {
         const handlers = this.get(channel);
-        Arrays.remove(handlers, fn);
+        // 移除处理函数
+        const index = handlers.indexOf(fn);
+        if (index >= 0) {
+            handlers.splice(index, 1);
+        }
         return this;
     }
     /**

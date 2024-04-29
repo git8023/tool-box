@@ -59,7 +59,14 @@ export class Broadcast<C, K = keyof C> {
     fn: fns.Consume<any>,
   ): Broadcast<C, K> {
     const handlers = this.get(channel);
-    Arrays.remove(handlers, fn);
+
+    // @since 1.0.56
+    // 移除处理函数使用原生方式
+    const index = handlers.indexOf(fn);
+    if (index >= 0) {
+      handlers.splice(index, 1);
+    }
+
     return this;
   }
 

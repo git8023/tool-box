@@ -1,4 +1,10 @@
+# 版本
+
+-[ ] v1.0.56
+  -[x] Fix 修复Broadcast.off会执行被移除处理函数
+
 # API文档
+
 [API说明文档](https://git8023.github.io/tool-box/doc/index.html)
 
 # 特别说明
@@ -71,7 +77,7 @@ export class UserServeApi {
   static readonly update = (
     id: string,
     user: User,
-  ) => axiosRequest.post(`/users/update/${id}`, user).then(({ data }) => data);
+  ) => axiosRequest.post(`/users/update/${ id }`, user).then(({ data }) => data);
 
   // 装饰器方案
   @Post('/users/update/{id}')
